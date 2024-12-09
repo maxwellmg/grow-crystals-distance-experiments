@@ -103,3 +103,16 @@ def combine_dataset(train_dataset, test_dataset):
     dataset_c['vocab_size'] = train_dataset['vocab_size']
     
     return dataset_c
+
+
+# Dataset and DataLoader
+class ToyDataset(torch.utils.data.Dataset):
+    def __init__(self, inputs, targets):
+        self.inputs = inputs
+        self.targets = targets
+
+    def __len__(self):
+        return len(self.inputs)
+
+    def __getitem__(self, idx):
+        return self.inputs[idx], self.targets[idx]

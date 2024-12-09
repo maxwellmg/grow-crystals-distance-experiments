@@ -1,8 +1,11 @@
 import torch.nn as nn
 import torch
+import torch.optim as optim
 import random
 import numpy as np
 import math
+
+from tqdm import tqdm
 
 class MLP(nn.Module):
     def __init__(self, shp, vocab_size, embd_dim, input_token=2, init_scale=1., unembd=False, weight_tied=False, seed=0):
@@ -131,3 +134,59 @@ class MLP_HS(nn.Module):
         logits = torch.log(prob)
         return logits
     
+
+# 2-Layer Transformer Model with Explicit Residual Connections
+class ToyTransformer(nn.Module):
+    def __init__(self, vocab_size, d_model, nhead, num_layers, seq_len = 16, use_dist_layer = False):
+        super(ToyTransformer, self).__init__()
+        self.embedding = nn.Embedding(vocab_size, d_model)
+        self.positional_encoding = nn.Parameter(torch.randn(seq_len, d_model))
+
+        # Define transformer encoder layers
+        self.layers = nn.ModuleList([
+            nn.TransformerDecoderLayer(
+                d_model=d_model, nhead=nhead, dim_feedforward=64, batch_first=True
+            ) for _ in range(num_layers)
+        ])
+        self.use_dist_layer = use_dist_layer
+        if use_dist_layer:
+            self.dist = DistLayer(d_model, vocab_size, n=1., eps=1e-4, bias=False)
+        self.fc = nn.Linear(d_model, vocab_size)
+
+    def forward(self, x):
+        embedded = self.embedding(x) + self.positional_encoding
+
+        # Pass through transformer layers with residual connections
+        x = embedded
+        for layer in self.layers:
+            x = layer(x,x) + x  # Explicit residual connection
+            
+        if self.use_dist_layer:
+            x = x[:, -1]
+            x = self.dist(x)
+            prob = x/torch.sum(x, dim=1, keepdim=True)
+            logits = torch.log(prob)
+        else:
+            logits = self.fc(x[:, -1])  # Only predict the last token
+        return logits
+    def train(self, param_dict: dict):
+
+        num_epochs = param_dict['num_epochs']
+        learning_rate = param_dict['learning_rate']
+        dataloader = param_dict['dataloader']
+        criterion = nn.CrossEntropyLoss()
+
+        optimizer = optim.AdamW(self.parameters(), lr=learning_rate)
+        for epoch in tqdm(range(num_epochs)):
+            total_loss = 0
+            for batch_inputs, batch_targets in dataloader:
+                optimizer.zero_grad()
+                logits = self.forward(batch_inputs)
+                
+                loss = criterion(logits, batch_targets.squeeze())
+                loss.backward()
+                optimizer.step()
+                total_loss += loss.item()
+
+            if (epoch + 1) % 50 == 0:
+                print(f"Epoch {epoch + 1}/{num_epochs}, Loss: {total_loss / len(dataloader):.4f}")
