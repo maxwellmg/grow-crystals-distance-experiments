@@ -2,4 +2,4 @@ __pycache__
 results
 
 scratch.ipynb
-slurm*.out
+*/slurm*.out

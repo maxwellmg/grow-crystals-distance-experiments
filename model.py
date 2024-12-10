@@ -155,6 +155,7 @@ class ToyTransformer(nn.Module):
         if use_dist_layer:
             self.dist = DistLayer(d_model, vocab_size, n=1., eps=1e-4, bias=False)
         self.fc = nn.Linear(d_model, vocab_size)
+        self.vocab_size = vocab_size
 
     def forward(self, x):
         embedded = self.embedding(x) + self.positional_encoding
@@ -179,16 +180,21 @@ class ToyTransformer(nn.Module):
         learning_rate = param_dict['learning_rate']
         dataloader = param_dict['dataloader']
         device = param_dict['device']
-        criterion = nn.CrossEntropyLoss()
+        
 
         optimizer = optim.AdamW(self.parameters(), lr=learning_rate)
         for epoch in tqdm(range(num_epochs)):
             total_loss = 0
             for batch_inputs, batch_targets in dataloader:
                 batch_inputs = batch_inputs.to(device)
-                batch_targets = batch_targets.to(device)
+                batch_targets = batch_targets.type(torch.LongTensor).to(device)
                 optimizer.zero_grad()
                 logits = self.forward(batch_inputs)
+
+ #               class_counts = torch.bincount(batch_targets.squeeze(), minlength=self.vocab_size).double() + 1e-8
+ #               class_weights = 1 / class_counts.cuda()
+
+                criterion = nn.CrossEntropyLoss()#weight=class_weights)
                 
                 loss = criterion(logits, batch_targets.squeeze())
                 loss.backward()

@@ -123,7 +123,7 @@ def descendant_dataset(p, num, seed=0, device='cpu'):
     np.random.seed(seed)
     
     N_sample = num
-    x = np.random.choice(range(1,p), N_sample*2).reshape(N_sample, 2)
+    x = np.random.choice(range(2,p), N_sample*2).reshape(N_sample, 2)
 
     # Check if b is a descendant of a
     # In a complete binary tree where two children of x is 2x and 2x+1
@@ -133,12 +133,123 @@ def descendant_dataset(p, num, seed=0, device='cpu'):
                 return True
             b //= 2  # Move up to the parent node
         return b == a
-    target = np.array([(p+1) if is_desc(x[i,0], x[i,1]) else p for i in range(N_sample)])
+    target = np.array([1 if is_desc(x[i,0]-1, x[i,1]-1) else 0 for i in range(N_sample)])
     
     data_id = torch.from_numpy(x).to(device)
     labels = torch.from_numpy(target).to(device)
     
     vocab_size = p+2
+    
+    dataset = {}
+    dataset['data_id'] = data_id
+    dataset['label'] = labels
+    dataset['vocab_size'] = vocab_size
+    
+    return dataset
+
+def descendant_dataset_2(p, num, seed=0, device='cpu'):
+
+    torch.manual_seed(seed)
+    np.random.seed(seed)
+    
+    N_sample = num*4
+    x = np.random.choice(range(1,(p-1)//2), num*2).reshape(num, 2)
+
+    data = np.zeros((N_sample, 4), dtype=np.int32)
+    data[:num,0] = x[:,0]
+    data[:num,1] = 2*x[:,0]
+    data[:num,2] = x[:,1]
+    data[:num,3] = 2*x[:,1]
+
+    data[num:(2*num),0] = x[:,0]
+    data[num:(2*num),1] = 2*x[:,0] + 1
+    data[num:(2*num),2] = x[:,1]
+    data[num:(2*num),3] = 2*x[:,1] + 1
+
+    data[2*num:(3*num),0] = 2*x[:,0] + 1
+    data[2*num:(3*num),1] = x[:,0]
+    data[2*num:(3*num),2] = 2*x[:,1] + 1
+    data[2*num:(3*num),3] = x[:,1]
+
+    data[3*num:(4*num),0] = 2*x[:,0] + 1
+    data[3*num:(4*num),1] = x[:,0]
+    data[3*num:(4*num),2] = 2*x[:,1] + 1
+    data[3*num:(4*num),3] = x[:,1]
+    
+    np.random.shuffle(data)
+    
+    data_id = torch.from_numpy(data[:, :3]).to(device)
+    labels = torch.from_numpy(data[:, 3]).to(device)
+    
+    vocab_size = p+1
+    
+    dataset = {}
+    dataset['data_id'] = data_id
+    dataset['label'] = labels
+    dataset['vocab_size'] = vocab_size
+    
+    return dataset
+
+
+def greater_than_dataset(p, num, seed=0, device='cpu'):
+
+    torch.manual_seed(seed)
+    np.random.seed(seed)
+    
+    N_sample = num
+    x = np.random.choice(range(p), N_sample*2).reshape(N_sample, 2)
+
+    target = np.array([p+1 if x[i,0] > x[i,1] else p for i in range(N_sample)])
+    
+    data_id = torch.from_numpy(x).to(device)
+    labels = torch.from_numpy(target).to(device)
+    
+    vocab_size = p+2
+    
+    dataset = {}
+    dataset['data_id'] = data_id
+    dataset['label'] = labels
+    dataset['vocab_size'] = vocab_size
+    
+    return dataset
+
+
+def xor_dataset(p, num, seed=0, device='cpu'):
+
+    torch.manual_seed(seed)
+    np.random.seed(seed)
+    
+    N_sample = num
+    x = np.random.choice(range(p), N_sample*2).reshape(N_sample, 2)
+
+    target = np.array([x[i,0]^x[i,1] for i in range(N_sample)])
+    
+    data_id = torch.from_numpy(x).to(device)
+    labels = torch.from_numpy(target).to(device)
+    
+    vocab_size = p+2
+    
+    dataset = {}
+    dataset['data_id'] = data_id
+    dataset['label'] = labels
+    dataset['vocab_size'] = vocab_size
+    
+    return dataset
+
+def multi_step_dataset(p, num, seed=0, device='cpu'):
+
+    torch.manual_seed(seed)
+    np.random.seed(seed)
+    
+    N_sample = num
+    x = np.random.choice(range(p), N_sample*3).reshape(N_sample, 3)
+
+    target = np.array([(x[i,0]*x[i,1]+x[i,2])%p for i in range(N_sample)])
+    
+    data_id = torch.from_numpy(x).to(device)
+    labels = torch.from_numpy(target).to(device)
+    
+    vocab_size = p
     
     dataset = {}
     dataset['data_id'] = data_id
