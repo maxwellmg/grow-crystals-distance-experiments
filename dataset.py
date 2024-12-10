@@ -116,3 +116,33 @@ class ToyDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, idx):
         return self.inputs[idx], self.targets[idx]
+    
+def descendant_dataset(p, num, seed=0, device='cpu'):
+
+    torch.manual_seed(seed)
+    np.random.seed(seed)
+    
+    N_sample = num
+    x = np.random.choice(range(1,p), N_sample*2).reshape(N_sample, 2)
+
+    # Check if b is a descendant of a
+    # In a complete binary tree where two children of x is 2x and 2x+1
+    def is_desc(a, b):
+        while b > 1:
+            if b == a:
+                return True
+            b //= 2  # Move up to the parent node
+        return b == a
+    target = np.array([(p+1) if is_desc(x[i,0], x[i,1]) else p for i in range(N_sample)])
+    
+    data_id = torch.from_numpy(x).to(device)
+    labels = torch.from_numpy(target).to(device)
+    
+    vocab_size = p+2
+    
+    dataset = {}
+    dataset['data_id'] = data_id
+    dataset['label'] = labels
+    dataset['vocab_size'] = vocab_size
+    
+    return dataset

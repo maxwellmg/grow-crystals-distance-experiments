@@ -1,0 +1,200 @@
+/om/user/dbaek/.conda/envs/sae-exp/lib/python3.10/site-packages/torch/__init__.py:955: UserWarning: torch.set_default_tensor_type() is deprecated as of PyTorch 2.1, please use torch.set_default_dtype() and torch.set_default_device() as alternatives. (Triggered internally at ../torch/csrc/tensor/python_tensor.cpp:432.)
+  _C._set_default_tensor_type(t)
+Training model with d_model = 16, batch_size = 16, data_size = 10
+  0%|          | 0/500 [00:00<?, ?it/s]  0%|          | 0/500 [00:00<?, ?it/s]
+Traceback (most recent call last):
+  File "/weka/scratch/weka/tegmark/dbaek/grow-crystals/scripts/../sweep_transformers.py", line 69, in <module>
+    model.train(param_dict)
+  File "/weka/scratch/weka/tegmark/dbaek/grow-crystals/model.py", line 188, in train
+    logits = self.forward(batch_inputs)
+  File "/weka/scratch/weka/tegmark/dbaek/grow-crystals/model.py", line 160, in forward
+    embedded = self.embedding(x) + self.positional_encoding
+  File "/om/user/dbaek/.conda/envs/sae-exp/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/om/user/dbaek/.conda/envs/sae-exp/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/om/user/dbaek/.conda/envs/sae-exp/lib/python3.10/site-packages/torch/nn/modules/sparse.py", line 164, in forward
+    return F.embedding(
+  File "/om/user/dbaek/.conda/envs/sae-exp/lib/python3.10/site-packages/torch/nn/functional.py", line 2267, in embedding
+    return torch.embedding(weight, input, padding_idx, scale_grad_by_freq, sparse)
+RuntimeError: Expected all tensors to be on the same device, but found at least two devices, cuda:0 and cpu! (when checking argument for argument index in method wrapper_CUDA__index_select)
+/om/user/dbaek/.conda/envs/sae-exp/lib/python3.10/site-packages/torch/__init__.py:955: UserWarning: torch.set_default_tensor_type() is deprecated as of PyTorch 2.1, please use torch.set_default_dtype() and torch.set_default_device() as alternatives. (Triggered internally at ../torch/csrc/tensor/python_tensor.cpp:432.)
+  _C._set_default_tensor_type(t)
+Training model with d_model = 16, batch_size = 16, data_size = 21
+  0%|          | 0/500 [00:00<?, ?it/s]  0%|          | 0/500 [00:00<?, ?it/s]
+Traceback (most recent call last):
+  File "/weka/scratch/weka/tegmark/dbaek/grow-crystals/scripts/../sweep_transformers.py", line 69, in <module>
+    model.train(param_dict)
+  File "/weka/scratch/weka/tegmark/dbaek/grow-crystals/model.py", line 188, in train
+    logits = self.forward(batch_inputs)
+  File "/weka/scratch/weka/tegmark/dbaek/grow-crystals/model.py", line 160, in forward
+    embedded = self.embedding(x) + self.positional_encoding
+  File "/om/user/dbaek/.conda/envs/sae-exp/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/om/user/dbaek/.conda/envs/sae-exp/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/om/user/dbaek/.conda/envs/sae-exp/lib/python3.10/site-packages/torch/nn/modules/sparse.py", line 164, in forward
+    return F.embedding(
+  File "/om/user/dbaek/.conda/envs/sae-exp/lib/python3.10/site-packages/torch/nn/functional.py", line 2267, in embedding
+    return torch.embedding(weight, input, padding_idx, scale_grad_by_freq, sparse)
+RuntimeError: Expected all tensors to be on the same device, but found at least two devices, cuda:0 and cpu! (when checking argument for argument index in method wrapper_CUDA__index_select)
+/om/user/dbaek/.conda/envs/sae-exp/lib/python3.10/site-packages/torch/__init__.py:955: UserWarning: torch.set_default_tensor_type() is deprecated as of PyTorch 2.1, please use torch.set_default_dtype() and torch.set_default_device() as alternatives. (Triggered internally at ../torch/csrc/tensor/python_tensor.cpp:432.)
+  _C._set_default_tensor_type(t)
+Training model with d_model = 16, batch_size = 16, data_size = 46
+  0%|          | 0/500 [00:00<?, ?it/s]  0%|          | 0/500 [00:00<?, ?it/s]
+Traceback (most recent call last):
+  File "/weka/scratch/weka/tegmark/dbaek/grow-crystals/scripts/../sweep_transformers.py", line 69, in <module>
+    model.train(param_dict)
+  File "/weka/scratch/weka/tegmark/dbaek/grow-crystals/model.py", line 188, in train
+    logits = self.forward(batch_inputs)
+  File "/weka/scratch/weka/tegmark/dbaek/grow-crystals/model.py", line 160, in forward
+    embedded = self.embedding(x) + self.positional_encoding
+  File "/om/user/dbaek/.conda/envs/sae-exp/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/om/user/dbaek/.conda/envs/sae-exp/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/om/user/dbaek/.conda/envs/sae-exp/lib/python3.10/site-packages/torch/nn/modules/sparse.py", line 164, in forward
+    return F.embedding(
+  File "/om/user/dbaek/.conda/envs/sae-exp/lib/python3.10/site-packages/torch/nn/functional.py", line 2267, in embedding
+    return torch.embedding(weight, input, padding_idx, scale_grad_by_freq, sparse)
+RuntimeError: Expected all tensors to be on the same device, but found at least two devices, cuda:0 and cpu! (when checking argument for argument index in method wrapper_CUDA__index_select)
+/om/user/dbaek/.conda/envs/sae-exp/lib/python3.10/site-packages/torch/__init__.py:955: UserWarning: torch.set_default_tensor_type() is deprecated as of PyTorch 2.1, please use torch.set_default_dtype() and torch.set_default_device() as alternatives. (Triggered internally at ../torch/csrc/tensor/python_tensor.cpp:432.)
+  _C._set_default_tensor_type(t)
+Training model with d_model = 16, batch_size = 16, data_size = 100
+  0%|          | 0/500 [00:00<?, ?it/s]  0%|          | 0/500 [00:00<?, ?it/s]
+Traceback (most recent call last):
+  File "/weka/scratch/weka/tegmark/dbaek/grow-crystals/scripts/../sweep_transformers.py", line 69, in <module>
+    model.train(param_dict)
+  File "/weka/scratch/weka/tegmark/dbaek/grow-crystals/model.py", line 188, in train
+    logits = self.forward(batch_inputs)
+  File "/weka/scratch/weka/tegmark/dbaek/grow-crystals/model.py", line 160, in forward
+    embedded = self.embedding(x) + self.positional_encoding
+  File "/om/user/dbaek/.conda/envs/sae-exp/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/om/user/dbaek/.conda/envs/sae-exp/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/om/user/dbaek/.conda/envs/sae-exp/lib/python3.10/site-packages/torch/nn/modules/sparse.py", line 164, in forward
+    return F.embedding(
+  File "/om/user/dbaek/.conda/envs/sae-exp/lib/python3.10/site-packages/torch/nn/functional.py", line 2267, in embedding
+    return torch.embedding(weight, input, padding_idx, scale_grad_by_freq, sparse)
+RuntimeError: Expected all tensors to be on the same device, but found at least two devices, cuda:0 and cpu! (when checking argument for argument index in method wrapper_CUDA__index_select)
+/om/user/dbaek/.conda/envs/sae-exp/lib/python3.10/site-packages/torch/__init__.py:955: UserWarning: torch.set_default_tensor_type() is deprecated as of PyTorch 2.1, please use torch.set_default_dtype() and torch.set_default_device() as alternatives. (Triggered internally at ../torch/csrc/tensor/python_tensor.cpp:432.)
+  _C._set_default_tensor_type(t)
+Training model with d_model = 16, batch_size = 16, data_size = 215
+  0%|          | 0/500 [00:00<?, ?it/s]  0%|          | 0/500 [00:00<?, ?it/s]
+Traceback (most recent call last):
+  File "/weka/scratch/weka/tegmark/dbaek/grow-crystals/scripts/../sweep_transformers.py", line 69, in <module>
+    model.train(param_dict)
+  File "/weka/scratch/weka/tegmark/dbaek/grow-crystals/model.py", line 188, in train
+    logits = self.forward(batch_inputs)
+  File "/weka/scratch/weka/tegmark/dbaek/grow-crystals/model.py", line 160, in forward
+    embedded = self.embedding(x) + self.positional_encoding
+  File "/om/user/dbaek/.conda/envs/sae-exp/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/om/user/dbaek/.conda/envs/sae-exp/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/om/user/dbaek/.conda/envs/sae-exp/lib/python3.10/site-packages/torch/nn/modules/sparse.py", line 164, in forward
+    return F.embedding(
+  File "/om/user/dbaek/.conda/envs/sae-exp/lib/python3.10/site-packages/torch/nn/functional.py", line 2267, in embedding
+    return torch.embedding(weight, input, padding_idx, scale_grad_by_freq, sparse)
+RuntimeError: Expected all tensors to be on the same device, but found at least two devices, cuda:0 and cpu! (when checking argument for argument index in method wrapper_CUDA__index_select)
+/om/user/dbaek/.conda/envs/sae-exp/lib/python3.10/site-packages/torch/__init__.py:955: UserWarning: torch.set_default_tensor_type() is deprecated as of PyTorch 2.1, please use torch.set_default_dtype() and torch.set_default_device() as alternatives. (Triggered internally at ../torch/csrc/tensor/python_tensor.cpp:432.)
+  _C._set_default_tensor_type(t)
+Training model with d_model = 16, batch_size = 16, data_size = 464
+  0%|          | 0/500 [00:00<?, ?it/s]  0%|          | 0/500 [00:00<?, ?it/s]
+Traceback (most recent call last):
+  File "/weka/scratch/weka/tegmark/dbaek/grow-crystals/scripts/../sweep_transformers.py", line 69, in <module>
+    model.train(param_dict)
+  File "/weka/scratch/weka/tegmark/dbaek/grow-crystals/model.py", line 188, in train
+    logits = self.forward(batch_inputs)
+  File "/weka/scratch/weka/tegmark/dbaek/grow-crystals/model.py", line 160, in forward
+    embedded = self.embedding(x) + self.positional_encoding
+  File "/om/user/dbaek/.conda/envs/sae-exp/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/om/user/dbaek/.conda/envs/sae-exp/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/om/user/dbaek/.conda/envs/sae-exp/lib/python3.10/site-packages/torch/nn/modules/sparse.py", line 164, in forward
+    return F.embedding(
+  File "/om/user/dbaek/.conda/envs/sae-exp/lib/python3.10/site-packages/torch/nn/functional.py", line 2267, in embedding
+    return torch.embedding(weight, input, padding_idx, scale_grad_by_freq, sparse)
+RuntimeError: Expected all tensors to be on the same device, but found at least two devices, cuda:0 and cpu! (when checking argument for argument index in method wrapper_CUDA__index_select)
+/om/user/dbaek/.conda/envs/sae-exp/lib/python3.10/site-packages/torch/__init__.py:955: UserWarning: torch.set_default_tensor_type() is deprecated as of PyTorch 2.1, please use torch.set_default_dtype() and torch.set_default_device() as alternatives. (Triggered internally at ../torch/csrc/tensor/python_tensor.cpp:432.)
+  _C._set_default_tensor_type(t)
+Training model with d_model = 16, batch_size = 16, data_size = 1000
+  0%|          | 0/500 [00:00<?, ?it/s]  0%|          | 0/500 [00:00<?, ?it/s]
+Traceback (most recent call last):
+  File "/weka/scratch/weka/tegmark/dbaek/grow-crystals/scripts/../sweep_transformers.py", line 69, in <module>
+    model.train(param_dict)
+  File "/weka/scratch/weka/tegmark/dbaek/grow-crystals/model.py", line 188, in train
+    logits = self.forward(batch_inputs)
+  File "/weka/scratch/weka/tegmark/dbaek/grow-crystals/model.py", line 160, in forward
+    embedded = self.embedding(x) + self.positional_encoding
+  File "/om/user/dbaek/.conda/envs/sae-exp/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/om/user/dbaek/.conda/envs/sae-exp/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/om/user/dbaek/.conda/envs/sae-exp/lib/python3.10/site-packages/torch/nn/modules/sparse.py", line 164, in forward
+    return F.embedding(
+  File "/om/user/dbaek/.conda/envs/sae-exp/lib/python3.10/site-packages/torch/nn/functional.py", line 2267, in embedding
+    return torch.embedding(weight, input, padding_idx, scale_grad_by_freq, sparse)
+RuntimeError: Expected all tensors to be on the same device, but found at least two devices, cuda:0 and cpu! (when checking argument for argument index in method wrapper_CUDA__index_select)
+/om/user/dbaek/.conda/envs/sae-exp/lib/python3.10/site-packages/torch/__init__.py:955: UserWarning: torch.set_default_tensor_type() is deprecated as of PyTorch 2.1, please use torch.set_default_dtype() and torch.set_default_device() as alternatives. (Triggered internally at ../torch/csrc/tensor/python_tensor.cpp:432.)
+  _C._set_default_tensor_type(t)
+Training model with d_model = 16, batch_size = 16, data_size = 2154
+  0%|          | 0/500 [00:00<?, ?it/s]  0%|          | 0/500 [00:00<?, ?it/s]
+Traceback (most recent call last):
+  File "/weka/scratch/weka/tegmark/dbaek/grow-crystals/scripts/../sweep_transformers.py", line 69, in <module>
+    model.train(param_dict)
+  File "/weka/scratch/weka/tegmark/dbaek/grow-crystals/model.py", line 188, in train
+    logits = self.forward(batch_inputs)
+  File "/weka/scratch/weka/tegmark/dbaek/grow-crystals/model.py", line 160, in forward
+    embedded = self.embedding(x) + self.positional_encoding
+  File "/om/user/dbaek/.conda/envs/sae-exp/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/om/user/dbaek/.conda/envs/sae-exp/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/om/user/dbaek/.conda/envs/sae-exp/lib/python3.10/site-packages/torch/nn/modules/sparse.py", line 164, in forward
+    return F.embedding(
+  File "/om/user/dbaek/.conda/envs/sae-exp/lib/python3.10/site-packages/torch/nn/functional.py", line 2267, in embedding
+    return torch.embedding(weight, input, padding_idx, scale_grad_by_freq, sparse)
+RuntimeError: Expected all tensors to be on the same device, but found at least two devices, cuda:0 and cpu! (when checking argument for argument index in method wrapper_CUDA__index_select)
+/om/user/dbaek/.conda/envs/sae-exp/lib/python3.10/site-packages/torch/__init__.py:955: UserWarning: torch.set_default_tensor_type() is deprecated as of PyTorch 2.1, please use torch.set_default_dtype() and torch.set_default_device() as alternatives. (Triggered internally at ../torch/csrc/tensor/python_tensor.cpp:432.)
+  _C._set_default_tensor_type(t)
+Training model with d_model = 16, batch_size = 16, data_size = 4641
+  0%|          | 0/500 [00:00<?, ?it/s]  0%|          | 0/500 [00:00<?, ?it/s]
+Traceback (most recent call last):
+  File "/weka/scratch/weka/tegmark/dbaek/grow-crystals/scripts/../sweep_transformers.py", line 69, in <module>
+    model.train(param_dict)
+  File "/weka/scratch/weka/tegmark/dbaek/grow-crystals/model.py", line 188, in train
+    logits = self.forward(batch_inputs)
+  File "/weka/scratch/weka/tegmark/dbaek/grow-crystals/model.py", line 160, in forward
+    embedded = self.embedding(x) + self.positional_encoding
+  File "/om/user/dbaek/.conda/envs/sae-exp/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/om/user/dbaek/.conda/envs/sae-exp/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/om/user/dbaek/.conda/envs/sae-exp/lib/python3.10/site-packages/torch/nn/modules/sparse.py", line 164, in forward
+    return F.embedding(
+  File "/om/user/dbaek/.conda/envs/sae-exp/lib/python3.10/site-packages/torch/nn/functional.py", line 2267, in embedding
+    return torch.embedding(weight, input, padding_idx, scale_grad_by_freq, sparse)
+RuntimeError: Expected all tensors to be on the same device, but found at least two devices, cuda:0 and cpu! (when checking argument for argument index in method wrapper_CUDA__index_select)
+/om/user/dbaek/.conda/envs/sae-exp/lib/python3.10/site-packages/torch/__init__.py:955: UserWarning: torch.set_default_tensor_type() is deprecated as of PyTorch 2.1, please use torch.set_default_dtype() and torch.set_default_device() as alternatives. (Triggered internally at ../torch/csrc/tensor/python_tensor.cpp:432.)
+  _C._set_default_tensor_type(t)
+Training model with d_model = 16, batch_size = 16, data_size = 10000
+  0%|          | 0/500 [00:00<?, ?it/s]  0%|          | 0/500 [00:00<?, ?it/s]
+Traceback (most recent call last):
+  File "/weka/scratch/weka/tegmark/dbaek/grow-crystals/scripts/../sweep_transformers.py", line 69, in <module>
+    model.train(param_dict)
+  File "/weka/scratch/weka/tegmark/dbaek/grow-crystals/model.py", line 188, in train
+    logits = self.forward(batch_inputs)
+  File "/weka/scratch/weka/tegmark/dbaek/grow-crystals/model.py", line 160, in forward
+    embedded = self.embedding(x) + self.positional_encoding
+  File "/om/user/dbaek/.conda/envs/sae-exp/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/om/user/dbaek/.conda/envs/sae-exp/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/om/user/dbaek/.conda/envs/sae-exp/lib/python3.10/site-packages/torch/nn/modules/sparse.py", line 164, in forward
+    return F.embedding(
+  File "/om/user/dbaek/.conda/envs/sae-exp/lib/python3.10/site-packages/torch/nn/functional.py", line 2267, in embedding
+    return torch.embedding(weight, input, padding_idx, scale_grad_by_freq, sparse)
+RuntimeError: Expected all tensors to be on the same device, but found at least two devices, cuda:0 and cpu! (when checking argument for argument index in method wrapper_CUDA__index_select)
