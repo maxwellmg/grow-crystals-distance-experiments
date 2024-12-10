@@ -257,3 +257,59 @@ def multi_step_dataset(p, num, seed=0, device='cpu'):
     dataset['vocab_size'] = vocab_size
     
     return dataset
+
+
+def mod_classification_dataset(p, num, seed=0, device='cpu'):
+
+    torch.manual_seed(seed)
+    np.random.seed(seed)
+    
+    N_sample = num
+    x = np.random.choice(range(p), N_sample).reshape(N_sample, 1)
+
+    target = np.array([x[i,0]%5 for i in range(N_sample)])
+    
+    data_id = torch.from_numpy(x).to(device)
+    labels = torch.from_numpy(target).to(device)
+    
+    vocab_size = p
+    
+    dataset = {}
+    dataset['data_id'] = data_id
+    dataset['label'] = labels
+    dataset['vocab_size'] = vocab_size
+    
+    return dataset
+
+from FamilyTreeGenerator import GenerateFamilyTree
+def family_tree_dataset(p, num, seed=0, device='cpu'):
+
+    torch.manual_seed(seed)
+    np.random.seed(seed)
+    
+    N_sample = num
+    ret_dic = GenerateFamilyTree(nodes_MAX=p, seed=seed)
+
+    unique_mapping = {element: index for index, element in enumerate(set(ret_dic["col_relation"]))}
+
+    # Map the list to numbers
+    mapped_list = [unique_mapping[element]+p+1 for element in ret_dic["col_relation"]]
+    x = np.zeros((len(ret_dic["col_subject"]), 3), dtype=np.int32)
+    x[:,0] = ret_dic["col_subject"]
+    x[:,1] = ret_dic["col_object"]
+    x[:,2] = mapped_list
+
+    random_indices = np.random.choice(x.shape[0], size=N_sample, replace=False)
+    data = x[random_indices]
+
+    data_id = torch.from_numpy(data[:,:2]).to(device)
+    labels = torch.from_numpy(data[:,2]).to(device)
+    
+    vocab_size = max(mapped_list) + 1
+    
+    dataset = {}
+    dataset['data_id'] = data_id
+    dataset['label'] = labels
+    dataset['vocab_size'] = vocab_size
+    
+    return dataset
