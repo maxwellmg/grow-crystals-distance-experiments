@@ -7,9 +7,6 @@ import math
 
 from tqdm import tqdm
 
-from itertools import combinations
-from sklearn.decomposition import PCA
-
 class MLP(nn.Module):
     def __init__(self, shp, vocab_size, embd_dim, input_token=2, init_scale=1., unembd=False, weight_tied=False, seed=0):
         super(MLP, self).__init__()
@@ -203,60 +200,3 @@ class ToyTransformer(nn.Module):
 
             if (epoch + 1) % 50 == 0:
                 print(f"Epoch {epoch + 1}/{num_epochs}, Loss: {total_loss / len(dataloader):.4f}")
-
-
-    def eval(self):
-        deviation_arr = []
-        points = [(i, j) for i in range(5) for j in range(5)]
-        
-
-        def side_length_deviation(a, b, c, d):
-            a, b, c, d = np.array(a), np.array(b), np.array(c), np.array(d)
-            
-            # Compute lengths of opposite sides
-            length_ab = np.linalg.norm(b - a)
-            length_cd = np.linalg.norm(d - c)
-            length_ac = np.linalg.norm(c - a)
-            length_bd = np.linalg.norm(b - d)
-            length_bc = np.linalg.norm(c - b)
-            length_ad = np.linalg.norm(d - a)
-            
-            # Calculate side length deviation
-            side_deviation = np.sqrt((length_ab - length_cd)**2 + (length_ac - length_bd)**2) / np.sqrt((length_ab ** 2 + length_bc ** 2 + length_cd ** 2 + length_ad ** 2)/2)
-            
-            return side_deviation
-
-        for quad in combinations(points, 3):
-            a, b, c = quad
-            d = (c[0] + b[0] - a[0], c[1] + b[1] - a[1])
-            if d[0] < 0 or d[0] >= 5 or d[1] < 0 or d[1] >= 5:
-                continue
-
-            if a[0] == b[0] and b[0] == c[0]:
-                continue
-            if a[1] == b[1] and b[1] == c[1]:
-                continue
-
-            a = 5*a[0] + a[1]
-            b = 5*b[0] + b[1]
-            c = 5*c[0] + c[1]
-            d = 5*d[0] + d[1]
-
-            a = self.embedding.weight[a].cpu().detach().numpy()
-            b = self.embedding.weight[b].cpu().detach().numpy()
-            c = self.embedding.weight[c].cpu().detach().numpy()
-            d = self.embedding.weight[d].cpu().detach().numpy()
-            deviation = side_length_deviation(a, b, c, d)
-            deviation_arr.append(deviation)
-
-        pca = PCA(n_components=10)
-        emb_pca = pca.fit_transform(self.embedding.weight.cpu().detach().numpy())
-        pca.fit_transform(emb_pca)
-        variances = pca.explained_variance_ratio_
-
-        result_dict = {
-            'parallelogram_quality': np.mean(deviation_arr),
-            'variances': variances,
-        }
-
-        return result_dict
