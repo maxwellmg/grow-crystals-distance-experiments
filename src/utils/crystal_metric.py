@@ -73,7 +73,7 @@ def lattice_metric(reps, aux_info):
 
     metric_dict = {
         'metric': np.mean(deviation_arr),
-        'variances': variances,
+        'variances': variances.tolist(),
     }
 
     return metric_dict
@@ -93,7 +93,7 @@ def greater_metric(reps, aux_info):
 
     metric_dict = {
         'metric': np.std(diff_arr) / np.mean(diff_arr),
-        'variances': variances,
+        'variances': variances.tolist(),
     }
     return metric_dict
 
@@ -135,7 +135,7 @@ def family_tree_metric(reps, aux_info):
 
     metric_dict = {
         'metric': 1 - np.mean([collinearity for collinearity in collinearity_by_generation.values() if not np.isnan(collinearity)]),
-        'variances': variances,
+        'variances': variances.tolist(),
     }
     return metric_dict
 
@@ -160,7 +160,7 @@ def equivalence_metric(reps, aux_info):
     print(np.mean(diff_arr) , np.mean(cross_diff_arr))
     metric_dict = {
         'metric': np.mean(diff_arr) / np.mean(cross_diff_arr),
-        'variances': variances,
+        'variances': variances.tolist(),
     }
     return metric_dict
 
@@ -187,6 +187,6 @@ def circle_metric(reps, aux_info):
 
     metric_dict = {
         'metric': circularity_score,
-        'variances': variances,
+        'variances': variances.tolist(),
     }
     return metric_dict

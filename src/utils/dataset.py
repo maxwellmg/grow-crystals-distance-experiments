@@ -1,6 +1,10 @@
 import numpy as np
 import torch
 
+import sys
+sys.path.append("..")
+from src.utils.FamilyTreeGenerator import GenerateFamilyTree
+
 def parallelogram_dataset(p, dim, num, seed=0, device='cpu'):
 
     torch.manual_seed(seed)
@@ -34,7 +38,7 @@ def parallelogram_dataset(p, dim, num, seed=0, device='cpu'):
     return dataset
 
 
-def modular_addition_dataset(p, seed=0, device='cpu'):
+def modular_addition_dataset(p, num, seed=0, device='cpu'):
     
     torch.manual_seed(seed)
     np.random.seed(seed)
@@ -43,8 +47,11 @@ def modular_addition_dataset(p, seed=0, device='cpu'):
     y = np.arange(p)
     XX, YY = np.meshgrid(x, y)
     data_id = np.transpose([XX.reshape(-1,), YY.reshape(-1,)])
+
+    data_id = np.random.choice(len(data_id), size=num, replace=True)
     labels = (data_id[:,0] + data_id[:,1]) % p
     labels = torch.tensor(labels, dtype=torch.long)
+
     
     vocab_size = p
     
@@ -281,7 +288,6 @@ def mod_classification_dataset(p, num, seed=0, device='cpu'):
     
     return dataset
 
-from FamilyTreeGenerator import GenerateFamilyTree
 def family_tree_dataset(p, num, seed=0, device='cpu'):
 
     torch.manual_seed(seed)
@@ -311,5 +317,6 @@ def family_tree_dataset(p, num, seed=0, device='cpu'):
     dataset['data_id'] = data_id
     dataset['label'] = labels
     dataset['vocab_size'] = vocab_size
+    dataset['dict_level'] = ret_dic['dict_level']
     
     return dataset

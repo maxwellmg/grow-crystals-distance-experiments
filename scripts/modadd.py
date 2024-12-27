@@ -1,8 +1,11 @@
 import time
 import os
 import sys
-from model import *
-from dataset import *
+
+sys.path.append('..')
+
+from src.utils.model import *
+from src.utils.dataset import *
 import numpy as np
 from sklearn.decomposition import PCA
 import math
