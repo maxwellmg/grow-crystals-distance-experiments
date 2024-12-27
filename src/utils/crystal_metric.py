@@ -123,10 +123,11 @@ def family_tree_metric(reps, aux_info):
             dot_products = (gen_representations[2:] - gen_representations[0]) @ pivot
             norms = np.linalg.norm((gen_representations[2:] - gen_representations[0]), axis=1) * np.linalg.norm(pivot)
             
+            norms = np.where(norms == 0, np.nan, norms)
             collinearity = np.abs(dot_products / norms)  # Cosine similarity with the pivot
+            collinearity = np.nan_to_num(collinearity, nan=1.0)
             collinearity_by_generation[generation] = collinearity.mean()
-            print(collinearity.mean())
-
+            
 
     pca = PCA(n_components=min(reps.shape[0], reps.shape[1]))
     emb_pca = pca.fit_transform(reps)
