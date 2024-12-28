@@ -278,14 +278,14 @@ def mod_classification_dataset(p, num, seed=0, device='cpu'):
     np.random.seed(seed)
     
     N_sample = num
-    x = np.random.choice(range(p), N_sample*2).reshape(N_sample, 2)
+    x = np.random.choice(range(p), N_sample).reshape(N_sample, 1)
 
     target = np.array([x[i,0]%5 for i in range(N_sample)])
     
     data_id = torch.from_numpy(x).to(device)
     labels = torch.from_numpy(target).to(device)
     
-    vocab_size = p+2
+    vocab_size = p
     
     dataset = {}
     dataset['data_id'] = data_id

@@ -67,7 +67,7 @@ def train_single_model(param_dict: dict):
     elif data_id == "family_tree":
         dataset = family_tree_dataset_2(p=127, num=data_size, seed=seed, device=device)
     elif data_id == "equivalence":
-        input_token = 2
+        input_token = 1
         dataset = mod_classification_dataset(p=100, num=data_size, seed=seed, device=device)
     elif data_id == "circle":
         dataset = modular_addition_dataset(p=31, num=data_size, seed=seed, device=device)

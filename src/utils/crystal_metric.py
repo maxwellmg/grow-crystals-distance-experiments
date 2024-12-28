@@ -100,7 +100,7 @@ def greater_metric(reps, aux_info):
 def family_tree_metric(reps, aux_info):
 
     dict_level = aux_info['dict_level']
-    reps = reps[:(max(dict_level.keys()) + 1)]
+    reps = reps[1:(max(dict_level.keys()) + 1)]
 
     pca = PCA(n_components=min(reps.shape[0], reps.shape[1]))
     reps = pca.fit_transform(reps)
@@ -112,7 +112,7 @@ def family_tree_metric(reps, aux_info):
     for node, generation in dict_level.items():
         if generation not in levels:
             levels[generation] = []
-        levels[generation].append(reps[node])
+        levels[generation].append(reps[node-1])
     
     # Compute one-dimensionality for each generation
     level_scores = {}

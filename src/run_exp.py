@@ -51,6 +51,8 @@ elif data_id == "equivalence":
     aux_info["mod"] = 5
 elif data_id == "circle":
     aux_info["p"] = 31
+elif data_id == "family_tree":
+    aux_info["dict_level"] = 2
 else:
     raise ValueError(f"Unknown data_id: {data_id}")
 
