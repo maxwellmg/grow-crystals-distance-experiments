@@ -70,7 +70,7 @@ def GenerateFamilyTree(nodes_MAX = 200, max_child_per_gen = 6, seed = 33, real_w
             cur_person = bfs_lst.pop()
             rng_num = np.random.randint(2)
 
-            if rng_num > 0: # marry with 70% probability
+            if rng_num >= 0: # marry with 70% probability
                 dict_couple_idx[cur_person] = couple_idx
                 dict_couple_idx[cur_idx] = couple_idx
                 couple_idx += 1
@@ -82,7 +82,7 @@ def GenerateFamilyTree(nodes_MAX = 200, max_child_per_gen = 6, seed = 33, real_w
                 cur_idx += 1
                 rng_num = np.random.randint(2)
 
-                if rng_num > 0: # have children with 70% probability
+                if rng_num >= 0: # have children with 70% probability
                     num_child = np.random.randint(1,max_child_per_gen+1)
                     list_sons = []
                     list_daughters = []

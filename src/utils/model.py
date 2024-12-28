@@ -19,16 +19,22 @@ class customNNModule(nn.Module):
         test_dataloader = param_dict['test_dataloader']
         device = param_dict['device']
 
-        verbose = False
+        verbose = True
         if 'verbose' in param_dict:
             verbose = param_dict['verbose']
 
         train_losses = []
         test_losses = []
         train_accuracies = []
-        test_accuracies = []        
+        test_accuracies = []       
 
-        optimizer = optim.AdamW(self.parameters(), lr=learning_rate)
+        best_loss = float('inf')
+        patience = 200
+        min_delta = 1e-4
+        counter = 0 
+
+        optimizer = optim.AdamW(self.parameters(), lr=learning_rate, weight_decay=0.01)
+        lamb_reg = 0.1
         for epoch in tqdm(range(num_epochs)):
             train_loss = 0
             train_correct = 0
@@ -45,6 +51,12 @@ class customNNModule(nn.Module):
                 criterion = nn.CrossEntropyLoss()#weight=class_weights)
                 
                 loss = criterion(logits, batch_targets.squeeze())
+                
+                if hasattr(self.embedding, 'weight'):
+                    total_loss = loss + lamb_reg * torch.mean(torch.sqrt(torch.mean(self.embedding.weight**2, dim=0)))
+                else:
+                    total_loss = loss + lamb_reg * torch.mean(torch.sqrt(torch.mean(self.embedding.data**2, dim=0)))
+                
                 loss.backward()
                 optimizer.step()
                 train_loss += loss.item()
@@ -79,6 +91,18 @@ class customNNModule(nn.Module):
             test_losses.append(test_loss / len(test_dataloader))
             train_accuracies.append(train_correct / train_total)
             test_accuracies.append(test_correct / test_total)
+
+            epoch_loss = train_loss / len(train_dataloader)
+            # Check for convergence
+            if best_loss - epoch_loss > min_delta:
+                best_loss = epoch_loss
+                counter = 0  # Reset counter if there's an improvement
+            else:
+                counter += 1  # Increment counter if no improvement
+
+            if counter >= patience:
+                print("Early stopping triggered!")
+                break
 
         ret_dic = {}
         ret_dic['train_losses'] = train_losses
@@ -131,7 +155,8 @@ class MLP(customNNModule):
         return self.embedding[data_id].reshape(batch,-1)
     
     def forward(self, x):
-        print(torch.sqrt(torch.mean(x**2)))
+        x = self.id2embd(x)
+#        print(torch.sqrt(torch.mean(x**2)))
         f = torch.nn.SiLU()
         for i in range(self.depth-1):
             x = self.linears[i](x)
@@ -249,7 +274,7 @@ class ToyTransformer(customNNModule):
         # Pass through transformer layers with residual connections
         x = embedded
         for layer in self.layers:
-            x = layer(x,x) + x  # Explicit residual connection
+            x = layer(x) + x  # Explicit residual connection
             
         if self.use_dist_layer:
             x = x[:, -1]
@@ -257,6 +282,7 @@ class ToyTransformer(customNNModule):
             prob = x/torch.sum(x, dim=1, keepdim=True)
             logits = torch.log(prob)
         else:
-            logits = self.fc(x[:, -1])  # Only predict the last token
+            logits = torch.einsum('bh,vh->bv', x[:, -1], self.embedding.weight)
+#            logits = self.fc(x[:, -1])  # Only predict the last token
         return logits
     

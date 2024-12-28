@@ -72,7 +72,7 @@ def lattice_metric(reps, aux_info):
     variances = pca.explained_variance_ratio_
 
     metric_dict = {
-        'metric': np.mean(deviation_arr),
+        'metric': float(np.mean(deviation_arr)),
         'variances': variances.tolist(),
     }
 
@@ -92,12 +92,17 @@ def greater_metric(reps, aux_info):
     variances = pca.explained_variance_ratio_
 
     metric_dict = {
-        'metric': np.std(diff_arr) / np.mean(diff_arr),
+        'metric': float(np.std(diff_arr) / np.mean(diff_arr)),
         'variances': variances.tolist(),
     }
     return metric_dict
 
 def family_tree_metric(reps, aux_info):
+
+    pca = PCA(n_components=min(reps.shape[0], reps.shape[1]))
+    reps = pca.fit_transform(reps)
+    reps = reps[:, :2]
+
     dict_level = aux_info['dict_level']
 
     # Group individuals by generation
@@ -129,12 +134,10 @@ def family_tree_metric(reps, aux_info):
             collinearity_by_generation[generation] = collinearity.mean()
             
 
-    pca = PCA(n_components=min(reps.shape[0], reps.shape[1]))
-    emb_pca = pca.fit_transform(reps)
     variances = pca.explained_variance_ratio_
 
     metric_dict = {
-        'metric': 1 - np.mean([collinearity for collinearity in collinearity_by_generation.values() if not np.isnan(collinearity)]),
+        'metric': float(1 - np.mean([collinearity for collinearity in collinearity_by_generation.values() if not np.isnan(collinearity)])),
         'variances': variances.tolist(),
     }
     return metric_dict
@@ -159,7 +162,7 @@ def equivalence_metric(reps, aux_info):
 
     print(np.mean(diff_arr) , np.mean(cross_diff_arr))
     metric_dict = {
-        'metric': np.mean(diff_arr) / np.mean(cross_diff_arr),
+        'metric': float(np.mean(diff_arr) / np.mean(cross_diff_arr)),
         'variances': variances.tolist(),
     }
     return metric_dict
@@ -186,7 +189,7 @@ def circle_metric(reps, aux_info):
 
 
     metric_dict = {
-        'metric': circularity_score,
+        'metric': float(circularity_score),
         'variances': variances.tolist(),
     }
     return metric_dict

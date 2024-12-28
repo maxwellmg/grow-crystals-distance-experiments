@@ -48,7 +48,8 @@ def modular_addition_dataset(p, num, seed=0, device='cpu'):
     XX, YY = np.meshgrid(x, y)
     data_id = np.transpose([XX.reshape(-1,), YY.reshape(-1,)])
 
-    data_id = np.random.choice(len(data_id), size=num, replace=True)
+    sample_id = np.random.choice(len(data_id), size=num, replace=True)
+    data_id = data_id[sample_id]
     labels = (data_id[:,0] + data_id[:,1]) % p
     labels = torch.tensor(labels, dtype=torch.long)
 
@@ -82,6 +83,8 @@ def split_dataset(dataset, train_ratio, seed=0):
     dataset2['train_label'] = dataset['label'][train_id]
     dataset2['test_label'] = dataset['label'][test_id]
     dataset2['vocab_size'] = dataset['vocab_size']
+    if 'dict_level' in dataset:
+        dataset2['dict_level'] = dataset['dict_level']
     return dataset2
 
 def repeat_dataset(dataset):
@@ -93,6 +96,9 @@ def repeat_dataset(dataset):
     dataset2['train_label'] = dataset['label']
     dataset2['test_label'] = dataset['label']
     dataset2['vocab_size'] = dataset['vocab_size']
+
+    if 'dict_level' in dataset:
+        dataset2['dict_level'] = dataset['dict_level']
     
     return dataset2
 
@@ -272,14 +278,14 @@ def mod_classification_dataset(p, num, seed=0, device='cpu'):
     np.random.seed(seed)
     
     N_sample = num
-    x = np.random.choice(range(p), N_sample).reshape(N_sample, 1)
+    x = np.random.choice(range(p), N_sample*2).reshape(N_sample, 2)
 
     target = np.array([x[i,0]%5 for i in range(N_sample)])
     
     data_id = torch.from_numpy(x).to(device)
     labels = torch.from_numpy(target).to(device)
     
-    vocab_size = p
+    vocab_size = p+2
     
     dataset = {}
     dataset['data_id'] = data_id
@@ -294,7 +300,7 @@ def family_tree_dataset(p, num, seed=0, device='cpu'):
     np.random.seed(seed)
     
     N_sample = num
-    ret_dic = GenerateFamilyTree(nodes_MAX=p, seed=seed)
+    ret_dic = GenerateFamilyTree(nodes_MAX=p, max_child_per_gen=3, seed=seed)
 
     unique_mapping = {element: index for index, element in enumerate(set(ret_dic["col_relation"]))}
 
@@ -305,7 +311,7 @@ def family_tree_dataset(p, num, seed=0, device='cpu'):
     x[:,1] = ret_dic["col_object"]
     x[:,2] = mapped_list
 
-    random_indices = np.random.choice(x.shape[0], size=N_sample, replace=False)
+    random_indices = np.random.choice(x.shape[0], size=N_sample)
     data = x[random_indices]
 
     data_id = torch.from_numpy(data[:,:2]).to(device)
@@ -318,5 +324,57 @@ def family_tree_dataset(p, num, seed=0, device='cpu'):
     dataset['label'] = labels
     dataset['vocab_size'] = vocab_size
     dataset['dict_level'] = ret_dic['dict_level']
+    
+    return dataset
+
+def family_tree_dataset_2(p, num, seed=0, device='cpu'):
+
+    torch.manual_seed(seed)
+    np.random.seed(seed)
+    
+    N_sample = num
+
+    '''
+    p : parent
+    p+1 : grandparent
+    p+2 : sibling
+    '''
+    total_data = []
+    for i in range(1,p):
+        if i >= 2:
+            total_data.append([i, p, i // 2])
+        if i >= 4:
+            total_data.append([i, p+1, i // 4])
+        if i > 1:
+            if i % 2 == 0:
+                total_data.append([i, p+2, i+1])
+            else:
+                total_data.append([i, p+2, i-1])
+
+    data = np.array(total_data)
+
+    data_id = np.random.choice(len(data), size=num, replace=True)
+    x = data[data_id]
+
+
+    dict_level = dict()
+    dict_level[1] = 0
+    for i in range(1,p):
+        if i*2 < p:
+            dict_level[i*2] = dict_level[i] + 1
+        if i*2+1 < p:
+            dict_level[i*2+1] = dict_level[i] + 1
+        
+    
+    data_id = torch.from_numpy(x[:, :2]).to(device)
+    labels = torch.from_numpy(x[:, 2]).to(device)
+    
+    vocab_size = p+3
+
+    dataset = {}
+    dataset['data_id'] = data_id
+    dataset['label'] = labels
+    dataset['vocab_size'] = vocab_size
+    dataset['dict_level'] = dict_level
     
     return dataset

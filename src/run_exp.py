@@ -61,7 +61,7 @@ else:
 
 ## Exp2: Metric vs Overall Dataset Size (fixed train-test split)
 print(f"Experiment 2: Metric vs Overall Dataset Size (fixed train-test split)")
-data_size_list = [100, 200, 500, 1000, 2000, 5000, 10000]
+data_size_list = [400, 500, 600, 700, 800, 900, 1000, 1100, 1200]
 for i in tqdm(range(len(data_size_list))):
     data_size = data_size_list[i]
     param_dict = {
@@ -90,14 +90,14 @@ for i in tqdm(range(len(data_size_list))):
     elif data_id == "family_tree":
         aux_info["dict_level"] = dataset['dict_level']
     elif data_id == "equivalence":
-        aux_info["mod"] = 5
+        aux_info["mod"] = 10
     elif data_id == "circle":
         aux_info["p"] = 59
     else:
         raise ValueError(f"Unknown data_id: {data_id}")
     
     if hasattr(model.embedding, 'weight'):
-        metric_dict = crystal_metric(model.embedding.weight.cpu(), data_id, aux_info)
+        metric_dict = crystal_metric(model.embedding.weight.cpu().detach(), data_id, aux_info)
     else:
         metric_dict = crystal_metric(model.embedding.data.cpu(), data_id, aux_info)
 
@@ -136,14 +136,14 @@ for i in tqdm(range(len(train_ratio_list))):
     elif data_id == "family_tree":
         aux_info["dict_level"] = dataset['dict_level']
     elif data_id == "equivalence":
-        aux_info["mod"] = 5
+        aux_info["mod"] = 10
     elif data_id == "circle":
         aux_info["p"] = 59
     else:
         raise ValueError(f"Unknown data_id: {data_id}")
     
     if hasattr(model.embedding, 'weight'):
-        metric_dict = crystal_metric(model.embedding.weight.cpu(), data_id, aux_info)
+        metric_dict = crystal_metric(model.embedding.weight.cpu().detach(), data_id, aux_info)
     else:
         metric_dict = crystal_metric(model.embedding.data.cpu(), data_id, aux_info)
 
@@ -155,6 +155,7 @@ for i in tqdm(range(len(train_ratio_list))):
 ## Exp4: Grokking plot: Run with different seeds
 print(f"Experiment 4: Train with different seeds")
 seed_list = np.linspace(0, 1000, 20, dtype=int)
+
 for i in tqdm(range(len(seed_list))):
     seed = seed_list[i]
     data_size = 1000
@@ -186,14 +187,14 @@ for i in tqdm(range(len(seed_list))):
     elif data_id == "family_tree":
         aux_info["dict_level"] = dataset['dict_level']
     elif data_id == "equivalence":
-        aux_info["mod"] = 5
+        aux_info["mod"] = 10
     elif data_id == "circle":
-        aux_info["p"] = 59
+        aux_info["p"] = 31
     else:
         raise ValueError(f"Unknown data_id: {data_id}")
 
     if hasattr(model.embedding, 'weight'):
-        metric_dict = crystal_metric(model.embedding.weight.cpu(), data_id, aux_info)
+        metric_dict = crystal_metric(model.embedding.weight.cpu().detach(), data_id, aux_info)
     else:
         metric_dict = crystal_metric(model.embedding.data.cpu(), data_id, aux_info)
 
