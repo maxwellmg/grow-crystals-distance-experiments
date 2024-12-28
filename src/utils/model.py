@@ -29,7 +29,7 @@ class customNNModule(nn.Module):
         test_accuracies = []       
 
         best_loss = float('inf')
-        patience = 200
+        patience = 100
         min_delta = 1e-4
         counter = 0 
 
@@ -57,7 +57,7 @@ class customNNModule(nn.Module):
                 else:
                     total_loss = loss + lamb_reg * torch.mean(torch.sqrt(torch.mean(self.embedding.data**2, dim=0)))
                 
-                loss.backward()
+                total_loss.backward()
                 optimizer.step()
                 train_loss += loss.item()
 
@@ -100,9 +100,11 @@ class customNNModule(nn.Module):
             else:
                 counter += 1  # Increment counter if no improvement
 
+            '''
             if counter >= patience:
                 print("Early stopping triggered!")
                 break
+            '''
 
         ret_dic = {}
         ret_dic['train_losses'] = train_losses

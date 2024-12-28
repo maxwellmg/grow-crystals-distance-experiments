@@ -151,7 +151,7 @@ def descendant_dataset(p, num, seed=0, device='cpu'):
     data_id = torch.from_numpy(x).to(device)
     labels = torch.from_numpy(target).to(device)
     
-    vocab_size = p+2
+    vocab_size = p
     
     dataset = {}
     dataset['data_id'] = data_id

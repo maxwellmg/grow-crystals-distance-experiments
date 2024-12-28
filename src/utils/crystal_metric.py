@@ -99,45 +99,39 @@ def greater_metric(reps, aux_info):
 
 def family_tree_metric(reps, aux_info):
 
+    dict_level = aux_info['dict_level']
+    reps = reps[:(max(dict_level.keys()) + 1)]
+
     pca = PCA(n_components=min(reps.shape[0], reps.shape[1]))
     reps = pca.fit_transform(reps)
     reps = reps[:, :2]
 
-    dict_level = aux_info['dict_level']
 
-    # Group individuals by generation
-    generation_groups = {}
-    for individual, generation in dict_level.items():
-        if generation not in generation_groups:
-            generation_groups[generation] = []
-        generation_groups[generation].append(individual)
-
-
-    # Compute the collinearity of representations for individuals within the same generation
-    collinearity_by_generation = {}
-
-    for generation, individuals in generation_groups.items():
-        # Get the indices of individuals in this generation
-        indices = [individual for individual in individuals]
-        # Extract their representations
-        gen_representations = reps[indices]
-
-        # Compute collinearity by fixing one vector as a pivot
-        if gen_representations.shape[0] > 2:  # Ensure there are at least three individuals
-            pivot = gen_representations[1] - gen_representations[0]  # Difference between first two vectors
-            dot_products = (gen_representations[2:] - gen_representations[0]) @ pivot
-            norms = np.linalg.norm((gen_representations[2:] - gen_representations[0]), axis=1) * np.linalg.norm(pivot)
-            
-            norms = np.where(norms == 0, np.nan, norms)
-            collinearity = np.abs(dot_products / norms)  # Cosine similarity with the pivot
-            collinearity = np.nan_to_num(collinearity, nan=1.0)
-            collinearity_by_generation[generation] = collinearity.mean()
+    # Group embeddings by generation
+    levels = {}
+    for node, generation in dict_level.items():
+        if generation not in levels:
+            levels[generation] = []
+        levels[generation].append(reps[node])
+    
+    # Compute one-dimensionality for each generation
+    level_scores = {}
+    for generation, points in levels.items():
+        if len(points) < 5:
+            continue
+        
+        points_array = np.stack(points)  # Convert to NumPy array
+        pca_sub = PCA(n_components=min(points_array.shape[0], points_array.shape[1]))
+        pca_sub.fit(points_array)
+        one_dimensionality = pca_sub.explained_variance_ratio_[0]  # Ratio of variance explained by the first PC
+        level_scores[generation] = one_dimensionality
             
 
+#    pca.fit_transform(reps)
     variances = pca.explained_variance_ratio_
 
     metric_dict = {
-        'metric': float(1 - np.mean([collinearity for collinearity in collinearity_by_generation.values() if not np.isnan(collinearity)])),
+        'metric': float(1 - np.mean(list(level_scores.values()))),
         'variances': variances.tolist(),
     }
     return metric_dict
@@ -155,6 +149,10 @@ def equivalence_metric(reps, aux_info):
                 cross_diff_arr.append(np.linalg.norm(reps[i] - reps[j]))
             else:
                 diff_arr.append(np.linalg.norm(reps[i] - reps[j]))
+
+    # Filter Outliers
+    diff_arr = np.array(diff_arr)
+    diff_arr = diff_arr[diff_arr < np.mean(cross_diff_arr)]
 
     pca = PCA(n_components=min(reps.shape[0], reps.shape[1]))
     emb_pca = pca.fit_transform(reps)
@@ -174,18 +172,28 @@ def circle_metric(reps, aux_info):
     emb_pca = pca.fit_transform(reps)
     variances = pca.explained_variance_ratio_
 
+    points = emb_pca[:, :2]
+
+    min_x, min_y = points.min(axis=0)
+    max_x, max_y = points.max(axis=0)
+    width = max_x - min_x
+    height = max_y - min_y
+    
+    # Normalize points to [0, 1] in both dimensions
+    normalized_points = (points - [min_x, min_y]) / [width, height]
+
     # Compute the centroid of the points
-    centroid = np.mean(emb_pca, axis=0)
+    centroid = np.mean(normalized_points, axis=0)
     
     # Compute distances of points from the centroid
-    distances = np.linalg.norm(emb_pca - centroid, axis=1)
+    distances = np.linalg.norm(normalized_points - centroid, axis=1)
     
     # Mean and standard deviation of distances
     mean_distance = np.mean(distances)
     std_distance = np.std(distances)
     
     # Circularity score
-    circularity_score = 1 - (std_distance / mean_distance)
+    circularity_score = (std_distance / mean_distance)
 
 
     metric_dict = {

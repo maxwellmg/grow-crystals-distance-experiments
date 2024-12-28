@@ -19,7 +19,7 @@ data_id_choices = ["lattice", "greater", "family_tree", "equivalence", "circle"]
 model_id_choices = ["H_MLP", "standard_MLP", "H_transformer", "standard_transformer"]
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Experiment')
-    parser.add_argument('--seed', type=int, default=77, help='random seed')
+    parser.add_argument('--seed', type=int, default=29, help='random seed')
     parser.add_argument('--data_id', type=str, required=True, choices=data_id_choices, help='Data ID')
     parser.add_argument('--model_id', type=str, required=True, choices=model_id_choices, help='Model ID')
 
@@ -42,6 +42,17 @@ param_dict = {
     'embd_dim': 16,
 }
 
+aux_info = {}
+if data_id == "lattice":
+    aux_info["lattice_size"] = 5
+elif data_id == "greater":
+    aux_info["p"] = 30
+elif data_id == "equivalence":
+    aux_info["mod"] = 5
+elif data_id == "circle":
+    aux_info["p"] = 31
+else:
+    raise ValueError(f"Unknown data_id: {data_id}")
 
 # Train the model
 print(f"Training model with seed {seed}, data_id {data_id}, model_id {model_id}")
@@ -81,20 +92,9 @@ for i in tqdm(range(len(data_size_list))):
     torch.save(model.state_dict(), f"../results/{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}.pt")
     with open(f"../results/{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}_train_results.json", "w") as f:
         json.dump(ret_dic["results"], f, indent=4)
-
-    aux_info = {}
-    if data_id == "lattice":
-        aux_info["lattice_size"] = 5
-    elif data_id == "greater":
-        aux_info["p"] = 30
-    elif data_id == "family_tree":
+    
+    if data_id == "family_tree":
         aux_info["dict_level"] = dataset['dict_level']
-    elif data_id == "equivalence":
-        aux_info["mod"] = 10
-    elif data_id == "circle":
-        aux_info["p"] = 59
-    else:
-        raise ValueError(f"Unknown data_id: {data_id}")
     
     if hasattr(model.embedding, 'weight'):
         metric_dict = crystal_metric(model.embedding.weight.cpu().detach(), data_id, aux_info)
@@ -128,19 +128,8 @@ for i in tqdm(range(len(train_ratio_list))):
     with open(f"../results/{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}_train_results.json", "w") as f:
         json.dump(ret_dic["results"], f, indent=4)
 
-    aux_info = {}
-    if data_id == "lattice":
-        aux_info["lattice_size"] = 5
-    elif data_id == "greater":
-        aux_info["p"] = 30
-    elif data_id == "family_tree":
+    if data_id == "family_tree":
         aux_info["dict_level"] = dataset['dict_level']
-    elif data_id == "equivalence":
-        aux_info["mod"] = 10
-    elif data_id == "circle":
-        aux_info["p"] = 59
-    else:
-        raise ValueError(f"Unknown data_id: {data_id}")
     
     if hasattr(model.embedding, 'weight'):
         metric_dict = crystal_metric(model.embedding.weight.cpu().detach(), data_id, aux_info)
@@ -179,19 +168,8 @@ for i in tqdm(range(len(seed_list))):
     with open(f"../results/{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}_train_results.json", "w") as f:
         json.dump(ret_dic["results"], f, indent=4)
 
-    aux_info = {}
-    if data_id == "lattice":
-        aux_info["lattice_size"] = 5
-    elif data_id == "greater":
-        aux_info["p"] = 30
-    elif data_id == "family_tree":
+    if data_id == "family_tree":
         aux_info["dict_level"] = dataset['dict_level']
-    elif data_id == "equivalence":
-        aux_info["mod"] = 10
-    elif data_id == "circle":
-        aux_info["p"] = 31
-    else:
-        raise ValueError(f"Unknown data_id: {data_id}")
 
     if hasattr(model.embedding, 'weight'):
         metric_dict = crystal_metric(model.embedding.weight.cpu().detach(), data_id, aux_info)

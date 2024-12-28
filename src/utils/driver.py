@@ -63,15 +63,14 @@ def train_single_model(param_dict: dict):
         dataset = parallelogram_dataset(p=5, dim=2, num=data_size, seed=seed, device=device)
         input_token = 3
     elif data_id == "greater":
-        dataset = greater_than_dataset(p=200, num=data_size, seed=seed, device=device)
+        dataset = greater_than_dataset(p=30, num=data_size, seed=seed, device=device)
     elif data_id == "family_tree":
         dataset = family_tree_dataset_2(p=127, num=data_size, seed=seed, device=device)
     elif data_id == "equivalence":
         input_token = 2
-        dataset = mod_classification_dataset(p=300, num=data_size, seed=seed, device=device)
+        dataset = mod_classification_dataset(p=100, num=data_size, seed=seed, device=device)
     elif data_id == "circle":
         dataset = modular_addition_dataset(p=31, num=data_size, seed=seed, device=device)
-        input_token = 3
     else:
         raise ValueError(f"Unknown data_id: {data_id}")
     
@@ -92,9 +91,9 @@ def train_single_model(param_dict: dict):
         shp = [input_token * embd_dim, hidden_size, embd_dim, vocab_size]
         model = MLP(shp=shp, vocab_size=vocab_size, embd_dim=embd_dim, input_token=input_token, unembd=unembd, weight_tied=weight_tied, seed=seed).to(device)
     elif model_id == "H_transformer":
-        model = ToyTransformer(vocab_size=vocab_size, d_model=embd_dim, nhead=16, num_layers=3, seq_len=input_token, use_dist_layer=True).to(device)
+        model = ToyTransformer(vocab_size=vocab_size, d_model=embd_dim, nhead=8, num_layers=1, seq_len=input_token, use_dist_layer=True).to(device)
     elif model_id == "standard_transformer":
-        model = ToyTransformer(vocab_size=vocab_size, d_model=embd_dim, nhead=16, num_layers=3, seq_len=input_token, use_dist_layer=False).to(device)
+        model = ToyTransformer(vocab_size=vocab_size, d_model=embd_dim, nhead=8, num_layers=1, seq_len=input_token, use_dist_layer=False).to(device)
     else:
         raise ValueError(f"Unknown model_id: {model_id}")
     
@@ -106,7 +105,7 @@ def train_single_model(param_dict: dict):
     test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
     ret_dic = {}
-    ret_dic["results"] = model.train(param_dict={'num_epochs': 10000, 'learning_rate': 0.01, 'train_dataloader': train_dataloader, 'test_dataloader': test_dataloader, 'device': device})
+    ret_dic["results"] = model.train(param_dict={'num_epochs': 4000, 'learning_rate': 0.001, 'train_dataloader': train_dataloader, 'test_dataloader': test_dataloader, 'device': device})
     ret_dic["model"] = model
     ret_dic["dataset"] = dataset
 
