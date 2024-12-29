@@ -3,8 +3,8 @@
 #SBATCH --gres=gpu:a100:1
 #SBATCH -n 16
 
-for ARG in $(python -c "import numpy as np; print(' '.join(map(str, np.linspace(49, 100, 20, dtype=int))))"); do
+for ARG in $(python -c "import numpy as np; print(' '.join(map(str, np.linspace(51, 100, 20, dtype=int))))"); do
     echo "Running with seed $ARG:"
-    python ../src/unit_exp.py --data_id circle --model_id H_transformer --seed $ARG
+    python ../src/unit_exp.py --data_id circle --model_id H_MLP --seed $ARG
     echo
 done

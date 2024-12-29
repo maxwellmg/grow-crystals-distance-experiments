@@ -19,7 +19,7 @@ data_id_choices = ["lattice", "greater", "family_tree", "equivalence", "circle"]
 model_id_choices = ["H_MLP", "standard_MLP", "H_transformer", "standard_transformer"]
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Experiment')
-    parser.add_argument('--seed', type=int, default=49, help='random seed')
+    parser.add_argument('--seed', type=int, default=66, help='random seed')
     parser.add_argument('--data_id', type=str, required=True, choices=data_id_choices, help='Data ID')
     parser.add_argument('--model_id', type=str, required=True, choices=model_id_choices, help='Model ID')
 
