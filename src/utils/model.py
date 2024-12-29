@@ -5,6 +5,8 @@ import random
 import numpy as np
 import math
 
+import sys
+
 from tqdm import tqdm
 
 class customNNModule(nn.Module):
@@ -34,7 +36,7 @@ class customNNModule(nn.Module):
         counter = 0 
 
         optimizer = optim.AdamW(self.parameters(), lr=learning_rate, weight_decay=0.01)
-        lamb_reg = 0.1
+        lamb_reg = 0.01
         for epoch in tqdm(range(num_epochs)):
             train_loss = 0
             train_correct = 0
@@ -86,6 +88,7 @@ class customNNModule(nn.Module):
 
             if (epoch + 1) % 50 == 0 and verbose:
                 print(f"Epoch {epoch + 1}/{num_epochs}, Train Loss: {train_loss / len(train_dataloader):.4f}, Train Acc: {train_correct / train_total:.4f}, Test Loss: {test_loss / len(test_dataloader):.4f}, Test Acc: {test_correct / test_total:.4f}")
+                sys.stdout.flush()
             
             train_losses.append(train_loss / len(train_dataloader))
             test_losses.append(test_loss / len(test_dataloader))
@@ -252,8 +255,13 @@ class MLP_HS(customNNModule):
 
 # 2-Layer Transformer Model with Explicit Residual Connections
 class ToyTransformer(customNNModule):
-    def __init__(self, vocab_size, d_model, nhead, num_layers, seq_len = 16, use_dist_layer = False):
+    def __init__(self, vocab_size, d_model, nhead, num_layers, seq_len = 16, use_dist_layer = False, seed=0):
         super(ToyTransformer, self).__init__()
+
+        torch.manual_seed(seed)
+        np.random.seed(seed)
+
+
         self.embedding = nn.Embedding(vocab_size, d_model)
         nn.init.normal_(self.embedding.weight, mean=0, std=1/np.sqrt(d_model))
         self.positional_encoding = nn.Parameter(torch.randn(seq_len, d_model))
@@ -261,7 +269,7 @@ class ToyTransformer(customNNModule):
         # Define transformer encoder layers
         self.layers = nn.ModuleList([
             nn.TransformerEncoderLayer(
-                d_model=d_model, nhead=nhead, dim_feedforward=64, batch_first=True
+                d_model=d_model, nhead=nhead, dim_feedforward=d_model*4, batch_first=True
             ) for _ in range(num_layers)
         ])
         self.use_dist_layer = use_dist_layer

@@ -91,21 +91,21 @@ def train_single_model(param_dict: dict):
         shp = [input_token * embd_dim, hidden_size, embd_dim, vocab_size]
         model = MLP(shp=shp, vocab_size=vocab_size, embd_dim=embd_dim, input_token=input_token, unembd=unembd, weight_tied=weight_tied, seed=seed).to(device)
     elif model_id == "H_transformer":
-        model = ToyTransformer(vocab_size=vocab_size, d_model=embd_dim, nhead=8, num_layers=1, seq_len=input_token, use_dist_layer=True).to(device)
+        model = ToyTransformer(vocab_size=vocab_size, d_model=embd_dim, nhead=2, num_layers=2, seq_len=input_token, seed=seed, use_dist_layer=True).to(device)
     elif model_id == "standard_transformer":
-        model = ToyTransformer(vocab_size=vocab_size, d_model=embd_dim, nhead=8, num_layers=1, seq_len=input_token, use_dist_layer=False).to(device)
+        model = ToyTransformer(vocab_size=vocab_size, d_model=embd_dim, nhead=2, num_layers=2, seq_len=input_token, seed=seed, use_dist_layer=False).to(device)
     else:
         raise ValueError(f"Unknown model_id: {model_id}")
     
     # define dataloader
-    batch_size = 16
+    batch_size = 32
     train_dataset = ToyDataset(dataset['train_data_id'], dataset['train_label'])
     test_dataset = ToyDataset(dataset['test_data_id'], dataset['test_label'])
     train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
     ret_dic = {}
-    ret_dic["results"] = model.train(param_dict={'num_epochs': 4000, 'learning_rate': 0.001, 'train_dataloader': train_dataloader, 'test_dataloader': test_dataloader, 'device': device})
+    ret_dic["results"] = model.train(param_dict={'num_epochs': 7000, 'learning_rate': 0.002, 'train_dataloader': train_dataloader, 'test_dataloader': test_dataloader, 'device': device})
     ret_dic["model"] = model
     ret_dic["dataset"] = dataset
 

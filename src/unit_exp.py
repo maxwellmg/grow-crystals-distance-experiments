@@ -51,7 +51,7 @@ ret_dic = train_single_model(param_dict)
 print(f"Experiment 1: Visualize Embeddings")
 model = ret_dic['model']
 dataset = ret_dic['dataset']
-torch.save(model.state_dict(), f"../results/{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}.pt")
+#torch.save(model.state_dict(), f"../results/{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}.pt")
 
 if hasattr(model.embedding, 'weight'):
     visualize_embedding(model.embedding.weight.cpu(), title=f"{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}", save_path=f"../results/unit_tests/emb_{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}.png", dict_level = dataset['dict_level'] if 'dict_level' in dataset else None)
@@ -71,7 +71,7 @@ elif data_id == "family_tree":
 elif data_id == "equivalence":
     aux_info["mod"] = 5
 elif data_id == "circle":
-    aux_info["p"] = 31
+    aux_info["p"] = 17
 else:
     raise ValueError(f"Unknown data_id: {data_id}")
 

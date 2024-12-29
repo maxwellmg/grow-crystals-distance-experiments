@@ -19,7 +19,7 @@ data_id_choices = ["lattice", "greater", "family_tree", "equivalence", "circle"]
 model_id_choices = ["H_MLP", "standard_MLP", "H_transformer", "standard_transformer"]
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Experiment')
-    parser.add_argument('--seed', type=int, default=29, help='random seed')
+    parser.add_argument('--seed', type=int, default=49, help='random seed')
     parser.add_argument('--data_id', type=str, required=True, choices=data_id_choices, help='Data ID')
     parser.add_argument('--model_id', type=str, required=True, choices=model_id_choices, help='Model ID')
 
@@ -74,7 +74,7 @@ else:
 
 ## Exp2: Metric vs Overall Dataset Size (fixed train-test split)
 print(f"Experiment 2: Metric vs Overall Dataset Size (fixed train-test split)")
-data_size_list = [400, 500, 600, 700, 800, 900, 1000, 1100, 1200]
+data_size_list = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
 for i in tqdm(range(len(data_size_list))):
     data_size = data_size_list[i]
     param_dict = {
