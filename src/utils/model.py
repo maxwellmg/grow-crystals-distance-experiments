@@ -20,6 +20,7 @@ class customNNModule(nn.Module):
         train_dataloader = param_dict['train_dataloader']
         test_dataloader = param_dict['test_dataloader']
         device = param_dict['device']
+        weight_decay = 0.01 if 'weight_decay' not in param_dict else param_dict['weight_decay']
 
         verbose = True
         if 'verbose' in param_dict:
@@ -33,10 +34,10 @@ class customNNModule(nn.Module):
         best_loss = float('inf')
         patience = 100
         min_delta = 1e-4
-        counter = 0 
+        counter = 0
 
-        optimizer = optim.AdamW(self.parameters(), lr=learning_rate, weight_decay=0.01)
-        lamb_reg = 0.01
+        optimizer = optim.AdamW(self.parameters(), lr=learning_rate, weight_decay=weight_decay)
+        lamb_reg = 0.01 if 'lambda' not in param_dict else param_dict['lambda']
         for epoch in tqdm(range(num_epochs)):
             train_loss = 0
             train_correct = 0
