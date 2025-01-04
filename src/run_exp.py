@@ -15,7 +15,7 @@ from src.utils.visualization import visualize_embedding
 from src.utils.crystal_metric import crystal_metric
 import json
 
-data_id_choices = ["lattice", "greater", "family_tree", "equivalence", "circle"]
+data_id_choices = ["lattice", "greater", "family_tree", "equivalence", "circle", "permutation"]
 model_id_choices = ["H_MLP", "standard_MLP", "H_transformer", "standard_transformer"]
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Experiment')
@@ -53,6 +53,8 @@ elif data_id == "circle":
     aux_info["p"] = 31
 elif data_id == "family_tree":
     aux_info["dict_level"] = 2
+elif data_id == "permutation":
+    aux_info["p"] = 5
 else:
     raise ValueError(f"Unknown data_id: {data_id}")
 
@@ -153,7 +155,7 @@ for i in tqdm(range(len(seed_list))):
     train_ratio = 0.8
 
     param_dict = {
-        'seed': seed,
+        'seed': int(seed),
         'data_id': data_id,
         'data_size': data_size,
         'train_ratio': train_ratio,

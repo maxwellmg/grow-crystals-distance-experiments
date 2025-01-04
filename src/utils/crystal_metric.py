@@ -18,6 +18,8 @@ def crystal_metric(reps, data_id, aux_info):
         return equivalence_metric(reps, aux_info)
     elif data_id == "circle":
         return circle_metric(reps, aux_info)
+    elif data_id == "permutation":
+        return permutation_metric(reps, aux_info)
     else:
         raise ValueError(f"Unknown data_id: {data_id}")
     
@@ -198,6 +200,55 @@ def circle_metric(reps, aux_info):
 
     metric_dict = {
         'metric': float(circularity_score),
+        'variances': variances.tolist(),
+    }
+    return metric_dict
+
+
+def permutation_metric(reps, aux_info): # average distance between permutations in the same coset
+
+    pca = PCA(n_components=min(reps.shape[0], reps.shape[1]))
+    emb_pca = pca.fit_transform(reps)
+    variances = pca.explained_variance_ratio_
+
+    points = emb_pca[:, :2]
+
+    min_x, min_y = points.min(axis=0)
+    max_x, max_y = points.max(axis=0)
+    width = max_x - min_x
+    height = max_y - min_y
+    
+    # Normalize points to [0, 1] in both dimensions
+    normalized_points = (points - [min_x, min_y]) / [width, height]
+
+    scatter = np.array(normalized_points)
+    
+    scatter -= scatter.mean(axis=0)
+
+    angles = np.linspace(0, 2 * np.pi, aux_info['p'], endpoint=False)
+
+    distances = []
+    for angle in angles[1:]: 
+        # Create rotation matrix
+        rotation_matrix = np.array([
+            [np.cos(angle), -np.sin(angle)],
+            [np.sin(angle),  np.cos(angle)]
+        ])
+        # rotate scatterplot
+        rotated_scatter = scatter @ rotation_matrix.T
+        
+        # nearest-neighbor distances
+        total_distance = 0
+        for point in scatter:
+            distances_to_rotated = np.linalg.norm(rotated_scatter - point, axis=1)
+            total_distance += np.min(distances_to_rotated)
+        distances.append(total_distance / len(scatter))
+    
+    # Symmetry score (inverse of average distance)
+    symmetry_score = 1 / (1 + np.mean(distances))
+
+    metric_dict = {
+        'metric': float(symmetry_score),
         'variances': variances.tolist(),
     }
     return metric_dict

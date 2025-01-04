@@ -23,3 +23,5 @@ def visualize_embedding(emb, title="", save_path=None, dict_level = None):
             plt.scatter(emb_pca[i, dim1], emb_pca[i, dim2], c='k')
     if save_path:
         plt.savefig(save_path)
+
+
