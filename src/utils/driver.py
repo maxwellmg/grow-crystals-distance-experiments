@@ -71,6 +71,8 @@ def train_single_model(param_dict: dict):
         dataset = mod_classification_dataset(p=100, num=data_size, seed=seed, device=device)
     elif data_id == "circle":
         dataset = modular_addition_dataset(p=31, num=data_size, seed=seed, device=device)
+    elif data_id=="permutation":
+        dataset = permutation_group_dataset(p=5, num=data_size, seed=seed, device=device)
     else:
         raise ValueError(f"Unknown data_id: {data_id}")
     
