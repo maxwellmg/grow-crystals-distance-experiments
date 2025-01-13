@@ -14,4 +14,4 @@
 * Function vector data are taken from [function vectors](https://github.com/ericwtodd/function_vectors/tree/main/dataset_files/abstractive) and are stored in ./abstractive. We only keep datasets that are consistent with our experimental setup. 
 * function_vectors.ipynb: parallelogram loss
 * function_vectors_parallelogram.ipynb: parallelogram
-* How to generate output: prediction.ipynb
+* How to generate text output: prediction.ipynb
