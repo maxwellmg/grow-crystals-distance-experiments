@@ -31,12 +31,15 @@ if __name__ == '__main__':
     parser.add_argument('--model_id', type=str, required=True, choices=model_id_choices, help='Model ID')
     parser.add_argument('--split', type=int, required=False, choices=split_choices, help='To split running experiments')
     parser.add_argument('--wd', type=float, required=False, choices=wd_choices, help='weight decay')
+    parser.add_argument('--n', type=int, required=False, default=1, help='n exponent value')
+
 
 args = parser.parse_args()
 seed = args.seed
 data_id = args.data_id
 model_id = args.model_id
 split=args.split
+n_exp = args.n
 
 ## ------------------------ CONFIG -------------------------- ##
 
@@ -46,9 +49,6 @@ embd_dim = 16
 
 lr = 0.002
 weight_decay = 0.01 if "MLP" in model_id else 0.005
-
-n_exp=1
-n_exp=1
 
 param_dict = {
     'seed': seed,
@@ -63,7 +63,7 @@ param_dict = {
     'weight_decay':weight_decay
 }
 
-results_root = "../results"
+results_root = f"../results/n_experiments/{n_exp}"
 
 current_datetime = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 results_root = f"{results_root}/{current_datetime}-{seed}-{data_id}-{model_id}"
