@@ -212,7 +212,7 @@ class MLP_HS(customNNModule):
                 linear_list.append(DistLayer(shp[i], shp[i+1], n=n))
         
         self.embedding = nn.Embedding(vocab_size, embd_dim)
-        nn.init.normal_(self.embedding.weight, mean=0, std=1/np.sqrt(embd_dim))
+        nn.init.normal_(self.embedding.weight, mean=0, std=1/np.sqrt(embd_dim)*init_scale)
         #self.embedding = torch.nn.Parameter(torch.normal(0,1/torch.tensor(embd_dim),size=(vocab_size, embd_dim))*init_scale)
 #        self.embedding = torch.nn.Parameter(torch.normal(0,1,size=(vocab_size, embd_dim))*init_scale)
         self.linears = nn.ModuleList(linear_list)
@@ -256,7 +256,7 @@ class MLP_HS(customNNModule):
 
 # 2-Layer Transformer Model with Explicit Residual Connections
 class ToyTransformer(customNNModule):
-    def __init__(self, vocab_size, d_model, nhead, num_layers, seq_len = 16, use_dist_layer = False, seed=0):
+    def __init__(self, vocab_size, d_model, nhead, num_layers, seq_len = 16, init_scale=1.,use_dist_layer = False, seed=0, n_dist=1.):
         super(ToyTransformer, self).__init__()
 
         torch.manual_seed(seed)
@@ -264,7 +264,7 @@ class ToyTransformer(customNNModule):
 
 
         self.embedding = nn.Embedding(vocab_size, d_model)
-        nn.init.normal_(self.embedding.weight, mean=0, std=1/np.sqrt(d_model))
+        nn.init.normal_(self.embedding.weight, mean=0, std=1/np.sqrt(d_model)*init_scale)
         self.positional_encoding = nn.Parameter(torch.randn(seq_len, d_model))
 
         # Define transformer encoder layers
@@ -275,7 +275,7 @@ class ToyTransformer(customNNModule):
         ])
         self.use_dist_layer = use_dist_layer
         if use_dist_layer:
-            self.dist = DistLayer(d_model, vocab_size, n=1., eps=1e-4, bias=False)
+            self.dist = DistLayer(d_model, vocab_size, n=n_dist, eps=1e-4, bias=False)
         self.fc = nn.Linear(d_model, vocab_size)
         self.vocab_size = vocab_size
 
