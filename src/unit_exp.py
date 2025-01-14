@@ -51,15 +51,15 @@ ret_dic = train_single_model(param_dict)
 print(f"Experiment 1: Visualize Embeddings")
 model = ret_dic['model']
 dataset = ret_dic['dataset']
-#torch.save(model.state_dict(), f"../results/{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}.pt")
+torch.save(model.state_dict(), f"../results/{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}_d=sqrtembed_1.pt")
 
 if hasattr(model.embedding, 'weight'):
-    visualize_embedding(model.embedding.weight.cpu(), title=f"{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}", save_path=f"../results/unit_tests/emb_{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}.png", dict_level = dataset['dict_level'] if 'dict_level' in dataset else None)
+    visualize_embedding(model.embedding.weight.cpu(), title=f"{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}", save_path=f"../results/unit_tests/emb_{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}_new.png", dict_level = dataset['dict_level'] if 'dict_level' in dataset else None)
 else:
-    visualize_embedding(model.embedding.data.cpu(), title=f"{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}", save_path=f"../results/unit_tests/emb_{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}.png", dict_level = dataset['dict_level'] if 'dict_level' in dataset else None)
+    visualize_embedding(model.embedding.data.cpu(), title=f"{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}", save_path=f"../results/unit_tests/emb_{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}_new.png", dict_level = dataset['dict_level'] if 'dict_level' in dataset else None)
 
-with open(f"../results/unit_tests/{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}_train_results.json", "w") as f:
-        json.dump(ret_dic["results"], f, indent=4)
+with open(f"../results/unit_tests/{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}_train_results_new.json", "w") as f:
+    json.dump(ret_dic["results"], f, indent=4)
 
 aux_info = {}
 if data_id == "lattice":
@@ -80,6 +80,6 @@ if hasattr(model.embedding, 'weight'):
 else:
     metric_dict = crystal_metric(model.embedding.data.cpu(), data_id, aux_info)
 
-with open(f"../results/unit_tests/{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}.json", "w") as f:
+with open(f"../results/unit_tests/{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}_new.json", "w") as f:
     json.dump(metric_dict, f, indent=4)
 

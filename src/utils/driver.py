@@ -4,6 +4,8 @@ from src.utils.dataset import *
 from src.utils.model import *
 import os
 
+import numpy as np
+
 def set_seed(seed: int) -> None:
     """
     Sets the seed to make everything deterministic, for reproducibility of experiments
@@ -85,17 +87,17 @@ def train_single_model(param_dict: dict):
         weight_tied = True
         hidden_size = 100
         shp = [input_token * embd_dim, hidden_size, embd_dim, vocab_size]
-        model = MLP_HS(shp=shp, vocab_size=vocab_size, embd_dim=embd_dim, input_token=input_token, weight_tied=weight_tied, seed=seed).to(device)
+        model = MLP_HS(shp=shp, vocab_size=vocab_size, embd_dim=embd_dim, input_token=input_token, weight_tied=weight_tied, seed=seed, n=np.sqrt(embd_dim), init_scale=1).to(device)
     elif model_id == "standard_MLP":
         unembd = True
         weight_tied = True
         hidden_size = 100
         shp = [input_token * embd_dim, hidden_size, embd_dim, vocab_size]
-        model = MLP(shp=shp, vocab_size=vocab_size, embd_dim=embd_dim, input_token=input_token, unembd=unembd, weight_tied=weight_tied, seed=seed).to(device)
+        model = MLP(shp=shp, vocab_size=vocab_size, embd_dim=embd_dim, input_token=input_token, unembd=unembd, weight_tied=weight_tied, seed=seed, init_scale=1).to(device)
     elif model_id == "H_transformer":
-        model = ToyTransformer(vocab_size=vocab_size, d_model=embd_dim, nhead=2, num_layers=2, seq_len=input_token, seed=seed, use_dist_layer=True).to(device)
+        model = ToyTransformer(vocab_size=vocab_size, d_model=embd_dim, nhead=2, num_layers=2, n_dist=np.sqrt(embd_dim),seq_len=input_token, seed=seed, use_dist_layer=True, init_scale=1).to(device)
     elif model_id == "standard_transformer":
-        model = ToyTransformer(vocab_size=vocab_size, d_model=embd_dim, nhead=2, num_layers=2, seq_len=input_token, seed=seed, use_dist_layer=False).to(device)
+        model = ToyTransformer(vocab_size=vocab_size, d_model=embd_dim, nhead=2, num_layers=2, seq_len=input_token, seed=seed, use_dist_layer=False, init_scale=1).to(device)
     else:
         raise ValueError(f"Unknown model_id: {model_id}")
     
