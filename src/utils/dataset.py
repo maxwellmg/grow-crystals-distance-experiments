@@ -72,8 +72,8 @@ def permutation_group_dataset(p, num, seed=0, device='cpu'):
     perms = list(itertools.permutations(range(4)))
     num_perms = len(perms)
 
-    test_dict = dict(enumerate(perms))
-    swapped_dict = {v:k for k,v in test_dict.items()}
+    perm_dict = dict(enumerate(perms))
+    swapped_dict = {v:k for k,v in perm_dict.items()}
 
     idx = torch.arange(num_perms)
 

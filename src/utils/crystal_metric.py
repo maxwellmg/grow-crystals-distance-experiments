@@ -205,7 +205,7 @@ def circle_metric(reps, aux_info):
     return metric_dict
 
 
-def permutation_metric(reps, aux_info): # average distance between permutations in the same coset
+def permutation_metric(reps, aux_info): # to be the average distance between permutations in the same coset
 
     pca = PCA(n_components=min(reps.shape[0], reps.shape[1]))
     emb_pca = pca.fit_transform(reps)
