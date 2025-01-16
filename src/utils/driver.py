@@ -61,6 +61,7 @@ def train_single_model(param_dict: dict):
     
     # define dataset
     input_token = 2
+    num_epochs = None
     if data_id == "lattice":
         dataset = parallelogram_dataset(p=5, dim=2, num=data_size, seed=seed, device=device)
         input_token = 3
@@ -75,6 +76,8 @@ def train_single_model(param_dict: dict):
         dataset = modular_addition_dataset(p=31, num=data_size, seed=seed, device=device)
     elif data_id=="permutation":
         dataset = permutation_group_dataset(p=4, num=data_size, seed=seed, device=device)
+        if model_id == "H_transformer" or model_id == "standard_transformer":
+            num_epochs = 12750 # extra epochs to train fully
     else:
         raise ValueError(f"Unknown data_id: {data_id}")
     
@@ -109,7 +112,7 @@ def train_single_model(param_dict: dict):
     test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
     ret_dic = {}
-    ret_dic["results"] = model.train(param_dict={'num_epochs': 7000, 'learning_rate': 0.002, 'train_dataloader': train_dataloader, 'test_dataloader': test_dataloader, 'device': device})
+    ret_dic["results"] = model.train(param_dict={'num_epochs': num_epochs if num_epochs else 7000, 'learning_rate': 0.002, 'train_dataloader': train_dataloader, 'test_dataloader': test_dataloader, 'device': device})
     ret_dic["model"] = model
     ret_dic["dataset"] = dataset
 

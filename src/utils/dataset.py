@@ -87,12 +87,16 @@ def permutation_group_dataset(p, num, seed=0, device='cpu'):
     # labels = [sum(a != b for a, b in zip(lbl, idx)) for lbl in labels]
     # labels = np.array([sum(math.pow(10, i) * num for i, num in enumerate(reversed(tup))) for tup in labels]).astype(int)
     labels = torch.tensor(labels, dtype=torch.long, device=device)
+
+    perm_vals = ["".join(np.array(perm_dict[i]).astype(str)) for i in range(len(perm_dict))]
+    new_perm_dict = dict(zip(perm_dict.keys(), perm_vals)) # are these indices correct?
     
     dataset = {}
 
     dataset['data_id'] = keyed_data_id
     dataset['label'] = keyed_labels
     dataset['vocab_size'] = num_perms
+    dataset['dict_level'] = new_perm_dict
 
     return dataset
 

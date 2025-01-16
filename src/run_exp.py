@@ -54,7 +54,7 @@ elif data_id == "circle":
 elif data_id == "family_tree":
     aux_info["dict_level"] = 2
 elif data_id == "permutation":
-    aux_info["p"] = 5
+    aux_info["p"] = 4
 else:
     raise ValueError(f"Unknown data_id: {data_id}")
 
@@ -69,9 +69,9 @@ dataset = ret_dic['dataset']
 torch.save(model.state_dict(), f"../results/{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}.pt")
 
 if hasattr(model.embedding, 'weight'):
-    visualize_embedding(model.embedding.weight.cpu(), title=f"{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}", save_path=f"../results/emb_{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}.png", dict_level = dataset['dict_level'] if 'dict_level' in dataset else None)
+    visualize_embedding(model.embedding.weight.cpu(), title=f"{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}", save_path=f"../results/emb_{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}.png", dict_level = dataset['dict_level'] if 'dict_level' in dataset else None, color_dict = False if data_id == "permutation" else True, adjust_overlapping_text = False)
 else:
-    visualize_embedding(model.embedding.data.cpu(), title=f"{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}", save_path=f"../results/emb_{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}.png", dict_level = dataset['dict_level'] if 'dict_level' in dataset else None)
+    visualize_embedding(model.embedding.data.cpu(), title=f"{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}", save_path=f"../results/emb_{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}.png", dict_level = dataset['dict_level'] if 'dict_level' in dataset else None, color_dict = False if data_id == "permutation" else True, adjust_overlapping_text = False)
 
 
 ## Exp2: Metric vs Overall Dataset Size (fixed train-test split)
@@ -143,8 +143,6 @@ for i in tqdm(range(len(train_ratio_list))):
     with open(f"../results/{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}.json", "w") as f:
         json.dump(metric_dict, f, indent=4)
 
-    
-
 ## Exp4: Grokking plot: Run with different seeds
 print(f"Experiment 4: Train with different seeds")
 seed_list = np.linspace(0, 1000, 20, dtype=int)
@@ -165,7 +163,6 @@ for i in tqdm(range(len(seed_list))):
     }
     print(f"Training model with seed {seed}, data_id {data_id}, model_id {model_id} with train_ratio {train_ratio} and data_size {data_size}")
     ret_dic = train_single_model(param_dict)
-
     model = ret_dic['model']
     dataset = ret_dic['dataset']
     torch.save(model.state_dict(), f"../results/{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}.pt")
@@ -182,3 +179,4 @@ for i in tqdm(range(len(seed_list))):
 
     with open(f"../results/{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}.json", "w") as f:
         json.dump(metric_dict, f, indent=4)
+    

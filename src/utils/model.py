@@ -4,10 +4,13 @@ import torch.optim as optim
 import random
 import numpy as np
 import math
+from src.utils.dataset import *
 
 import sys
+# import keyboard
 
 from tqdm import tqdm
+
 
 class customNNModule(nn.Module):
     def __init__(self):
@@ -39,6 +42,10 @@ class customNNModule(nn.Module):
         optimizer = optim.AdamW(self.parameters(), lr=learning_rate, weight_decay=weight_decay)
         lamb_reg = 0.01 if 'lambda' not in param_dict else param_dict['lambda']
         for epoch in tqdm(range(num_epochs)):
+            # if keyboard.is_pressed('ctrl+d'):
+            #     print("Manual early stopping occurring.")
+            #     break
+
             train_loss = 0
             train_correct = 0
             train_total = 0
@@ -48,8 +55,8 @@ class customNNModule(nn.Module):
                 optimizer.zero_grad()
                 logits = self.forward(batch_inputs)
 
- #               class_counts = torch.bincount(batch_targets.squeeze(), minlength=self.vocab_size).double() + 1e-8
- #               class_weights = 1 / class_counts.cuda()
+#               class_counts = torch.bincount(batch_targets.squeeze(), minlength=self.vocab_size).double() + 1e-8
+#               class_weights = 1 / class_counts.cuda()
 
                 criterion = nn.CrossEntropyLoss()#weight=class_weights)
                 
@@ -297,3 +304,50 @@ class ToyTransformer(customNNModule):
 #            logits = self.fc(x[:, -1])  # Only predict the last token
         return logits
     
+
+def load_model_from_file(model_id, data_id, data_size = 1000, train_ratio=0.8,seed=66, embd_dim=16, device='cpu'):
+
+    input_token=2
+
+    if data_id == "lattice":
+        dataset = parallelogram_dataset(p=5, dim=2, num=data_size, seed=seed, device=device)
+        input_token = 3
+    elif data_id == "greater":
+        dataset = greater_than_dataset(p=30, num=data_size, seed=seed, device=device)
+    elif data_id == "family_tree":
+        dataset = family_tree_dataset_2(p=127, num=data_size, seed=seed, device=device)
+    elif data_id == "equivalence":
+        input_token = 1
+        dataset = mod_classification_dataset(p=100, num=data_size, seed=seed, device=device)
+    elif data_id == "circle":
+        dataset = modular_addition_dataset(p=31, num=data_size, seed=seed, device=device)
+    elif data_id=="permutation":
+        dataset = permutation_group_dataset(p=4, num=data_size, seed=seed, device=device)
+    else:
+        raise ValueError(f"Unknown data_id: {data_id}")
+
+    dataset = split_dataset(dataset, train_ratio=train_ratio, seed=seed)
+
+    vocab_size = dataset['vocab_size']
+
+    if model_id == "H_MLP":
+        weight_tied = True
+        hidden_size = 100
+        shp = [input_token * embd_dim, hidden_size, embd_dim, vocab_size]
+        model = MLP_HS(shp=shp, vocab_size=vocab_size, embd_dim=embd_dim, input_token=input_token, weight_tied=weight_tied, seed=seed, n=np.sqrt(embd_dim), init_scale=1).to(device)
+    elif model_id == "standard_MLP":
+        unembd = True
+        weight_tied = True
+        hidden_size = 100
+        shp = [input_token * embd_dim, hidden_size, embd_dim, vocab_size]
+        model = MLP(shp=shp, vocab_size=vocab_size, embd_dim=embd_dim, input_token=input_token, unembd=unembd, weight_tied=weight_tied, seed=seed, init_scale=1).to(device)
+    elif model_id == "H_transformer":
+        model = ToyTransformer(vocab_size=vocab_size, d_model=embd_dim, nhead=2, num_layers=2, n_dist=np.sqrt(embd_dim),seq_len=input_token, seed=seed, use_dist_layer=True, init_scale=1).to(device)
+    elif model_id == "standard_transformer":
+        model = ToyTransformer(vocab_size=vocab_size, d_model=embd_dim, nhead=2, num_layers=2, seq_len=input_token, seed=seed, use_dist_layer=False, init_scale=1).to(device)
+    else:
+        raise ValueError(f"Unknown model_id: {model_id}")
+
+    model.load_state_dict(torch.load(f"../results/{seed}_permutation_{model_id}_{data_size}_{train_ratio}.pt"))
+
+    return model
