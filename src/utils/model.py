@@ -5,6 +5,7 @@ import random
 import numpy as np
 import math
 from src.utils.dataset import *
+from src.utils.visualization import *
 
 import sys
 # import keyboard
@@ -23,7 +24,8 @@ class customNNModule(nn.Module):
         train_dataloader = param_dict['train_dataloader']
         test_dataloader = param_dict['test_dataloader']
         device = param_dict['device']
-        weight_decay = 0.01 if 'weight_decay' not in param_dict else param_dict['weight_decay']
+        weight_decay = param_dict['weight_decay']
+        video = False if 'video' not in param_dict else param_dict['video']
 
         verbose = True
         if 'verbose' in param_dict:
@@ -45,6 +47,12 @@ class customNNModule(nn.Module):
             # if keyboard.is_pressed('ctrl+d'):
             #     print("Manual early stopping occurring.")
             #     break
+            if video and epoch%10 == 0: # save every 10 epochs
+                if hasattr(self.embedding, 'weight'):
+                    embd = self.embedding.weight
+                else:
+                    embd = self.embedding.data
+                visualize_embedding(embd, title=f"Epoch {epoch}", save_path=f"../video_imgs/{epoch}.png", dict_level = None, color_dict = True, adjust_overlapping_text = False)
 
             train_loss = 0
             train_correct = 0
@@ -305,7 +313,7 @@ class ToyTransformer(customNNModule):
         return logits
     
 
-def load_model_from_file(model_id, data_id, data_size = 1000, train_ratio=0.8,seed=66, embd_dim=16, device='cpu'):
+def load_model_from_file(model_id, data_id, results_root = "results",data_size = 1000, train_ratio=0.8,seed=66, embd_dim=16, device='cpu'):
 
     input_token=2
 
@@ -348,6 +356,6 @@ def load_model_from_file(model_id, data_id, data_size = 1000, train_ratio=0.8,se
     else:
         raise ValueError(f"Unknown model_id: {model_id}")
 
-    model.load_state_dict(torch.load(f"../results/{seed}_permutation_{model_id}_{data_size}_{train_ratio}.pt"))
+    model.load_state_dict(torch.load(f"../{results_root}/{seed}_permutation_{model_id}_{data_size}_{train_ratio}.pt"))
 
     return model

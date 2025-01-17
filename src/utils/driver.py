@@ -47,6 +47,9 @@ def train_single_model(param_dict: dict):
         raise ValueError("device must be provided in param_dict")
     if "embd_dim" not in param_dict:
         raise ValueError("embd_dim must be provided in param_dict")
+    if "n_exp" not in param_dict: 
+        raise ValueError("n_exp must be provided in param_dict")
+
     
     seed = param_dict['seed']
     data_id = param_dict['data_id']
@@ -55,13 +58,17 @@ def train_single_model(param_dict: dict):
     model_id = param_dict['model_id']
     device = param_dict['device']
     embd_dim = param_dict['embd_dim']
+    n_exp = param_dict['n_exp']
+
+    video = False if 'video' not in param_dict else param_dict['video']
+    lr = 0.002 if 'lr' not in param_dict else param_dict['lr']
+    weight_decay = 0.01 if 'weight_decay' not in param_dict else param_dict['weight_decay']
 
     set_seed(seed)
 
-    
     # define dataset
     input_token = 2
-    num_epochs = None
+    num_epochs = 7000
     if data_id == "lattice":
         dataset = parallelogram_dataset(p=5, dim=2, num=data_size, seed=seed, device=device)
         input_token = 3
@@ -77,20 +84,19 @@ def train_single_model(param_dict: dict):
     elif data_id=="permutation":
         dataset = permutation_group_dataset(p=4, num=data_size, seed=seed, device=device)
         if model_id == "H_transformer" or model_id == "standard_transformer":
-            num_epochs = 12750 # extra epochs to train fully
+            num_epochs = 10000 # extra epochs to train fully
     else:
         raise ValueError(f"Unknown data_id: {data_id}")
     
     dataset = split_dataset(dataset, train_ratio=train_ratio, seed=seed)
     vocab_size = dataset['vocab_size']
 
-
     # define model
     if model_id == "H_MLP":
         weight_tied = True
         hidden_size = 100
         shp = [input_token * embd_dim, hidden_size, embd_dim, vocab_size]
-        model = MLP_HS(shp=shp, vocab_size=vocab_size, embd_dim=embd_dim, input_token=input_token, weight_tied=weight_tied, seed=seed, n=np.embd_dim, init_scale=1).to(device)
+        model = MLP_HS(shp=shp, vocab_size=vocab_size, embd_dim=embd_dim, input_token=input_token, weight_tied=weight_tied, seed=seed, n=n_exp, init_scale=1).to(device)
     elif model_id == "standard_MLP":
         unembd = True
         weight_tied = True
@@ -98,7 +104,7 @@ def train_single_model(param_dict: dict):
         shp = [input_token * embd_dim, hidden_size, embd_dim, vocab_size]
         model = MLP(shp=shp, vocab_size=vocab_size, embd_dim=embd_dim, input_token=input_token, unembd=unembd, weight_tied=weight_tied, seed=seed, init_scale=1).to(device)
     elif model_id == "H_transformer":
-        model = ToyTransformer(vocab_size=vocab_size, d_model=embd_dim, nhead=2, num_layers=2, n_dist=embd_dim,seq_len=input_token, seed=seed, use_dist_layer=True, init_scale=1).to(device)
+        model = ToyTransformer(vocab_size=vocab_size, d_model=embd_dim, nhead=2, num_layers=2, n_dist=n_exp,seq_len=input_token, seed=seed, use_dist_layer=True, init_scale=1).to(device)
     elif model_id == "standard_transformer":
         model = ToyTransformer(vocab_size=vocab_size, d_model=embd_dim, nhead=2, num_layers=2, seq_len=input_token, seed=seed, use_dist_layer=False, init_scale=1).to(device)
     else:
@@ -112,7 +118,7 @@ def train_single_model(param_dict: dict):
     test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
     ret_dic = {}
-    ret_dic["results"] = model.train(param_dict={'num_epochs': num_epochs if num_epochs else 7000, 'learning_rate': 0.002, 'train_dataloader': train_dataloader, 'test_dataloader': test_dataloader, 'device': device})
+    ret_dic["results"] = model.train(param_dict={'num_epochs': num_epochs, 'learning_rate': lr, 'weight_decay':weight_decay, 'train_dataloader': train_dataloader, 'test_dataloader': test_dataloader, 'device': device, 'video': video})
     ret_dic["model"] = model
     ret_dic["dataset"] = dataset
 

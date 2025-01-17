@@ -43,6 +43,8 @@ def visualize_embedding(emb, title="", save_path=None, dict_level = None, color_
         adjust_text(texts, x=x, y=y, autoalign='xy', force_points=0.5, only_move = {'text':'xy'})
     if save_path:
         plt.savefig(save_path)
+    plt.show()
+    plt.close()
 
 
 def visualize_embedding_3d(emb, title="", save_path=None, dict_level = None, color_dict=True):

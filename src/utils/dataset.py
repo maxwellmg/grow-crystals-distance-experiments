@@ -69,7 +69,7 @@ def permutation_group_dataset(p, num, seed=0, device='cpu'):
     torch.manual_seed(seed)
     np.random.seed(seed)
 
-    perms = list(itertools.permutations(range(4)))
+    perms = list(itertools.permutations(range(p)))
     num_perms = len(perms)
 
     perm_dict = dict(enumerate(perms))
@@ -79,13 +79,9 @@ def permutation_group_dataset(p, num, seed=0, device='cpu'):
 
     data_id = [[perms[int(i)], perms[int(j)]] for i, j in torch.cartesian_prod(idx, idx)]
     keyed_data_id = np.array([[swapped_dict[data_id[i][0]], swapped_dict[data_id[i][1]]] for i in range(len(data_id))])
-    # data_id = np.fromiter([[tuple(perms[i]), tuple(perms[j])] for i, j in zip(idx1, idx2)], object)
-    # data_id = np.array([[perms_list[int(i)], perms_list[int(j)]] for i, j in torch.cartesian_prod(idx, idx)])
 
     labels = [tuple(np.array(perms[int(i)])[np.array(perms[int(j)])]) for i, j in torch.cartesian_prod(idx, idx)]
     keyed_labels = np.array([swapped_dict[labels[i]] for i in range(len(labels))])
-    # labels = [sum(a != b for a, b in zip(lbl, idx)) for lbl in labels]
-    # labels = np.array([sum(math.pow(10, i) * num for i, num in enumerate(reversed(tup))) for tup in labels]).astype(int)
     labels = torch.tensor(labels, dtype=torch.long, device=device)
 
     perm_vals = ["".join(np.array(perm_dict[i]).astype(str)) for i in range(len(perm_dict))]
