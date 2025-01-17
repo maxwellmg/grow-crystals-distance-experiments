@@ -45,36 +45,3 @@ def visualize_embedding(emb, title="", save_path=None, dict_level = None, color_
         plt.savefig(save_path)
 
 
-def visualize_embedding_3d(emb, title="", save_path=None, dict_level = None, color_dict=True):
-    pca = PCA(n_components=3)
-    emb_pca = pca.fit_transform(emb.detach().numpy())
-    print("Explained Variance Ratio:", pca.explained_variance_ratio_)
-    
-    plt.rcParams.update({'font.size': 12})
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    
-    for i in range(len(emb_pca)):
-        if dict_level:
-            if i in dict_level:
-                ax.scatter(emb_pca[i, 0], emb_pca[i, 1], emb_pca[i, 2], 
-                           c=colors[dict_level[i]] if color_dict else 'k')
-                ax.text(emb_pca[i, 0], emb_pca[i, 1], emb_pca[i, 2], 
-                        str(dict_level[i]), fontsize=12)
-        else:
-            ax.scatter(emb_pca[i, 0], emb_pca[i, 1], emb_pca[i, 2], c='k')
-            ax.text(emb_pca[i, 0], emb_pca[i, 1], emb_pca[i, 2], str(i), fontsize=12)
-
-    ax.set_title(title)
-    ax.set_xlabel('PC1')
-    ax.set_ylabel('PC2')
-    ax.set_zlabel('PC3')
-
-    if save_path:
-        plt.savefig(save_path)
-    else:
-        plt.show()
-
-
-
-

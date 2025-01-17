@@ -334,7 +334,7 @@ def load_model_from_file(model_id, data_id, data_size = 1000, train_ratio=0.8,se
         weight_tied = True
         hidden_size = 100
         shp = [input_token * embd_dim, hidden_size, embd_dim, vocab_size]
-        model = MLP_HS(shp=shp, vocab_size=vocab_size, embd_dim=embd_dim, input_token=input_token, weight_tied=weight_tied, seed=seed, n=embd_dim, init_scale=1).to(device)
+        model = MLP_HS(shp=shp, vocab_size=vocab_size, embd_dim=embd_dim, input_token=input_token, weight_tied=weight_tied, seed=seed, n=np.sqrt(embd_dim), init_scale=1).to(device)
     elif model_id == "standard_MLP":
         unembd = True
         weight_tied = True
@@ -342,7 +342,7 @@ def load_model_from_file(model_id, data_id, data_size = 1000, train_ratio=0.8,se
         shp = [input_token * embd_dim, hidden_size, embd_dim, vocab_size]
         model = MLP(shp=shp, vocab_size=vocab_size, embd_dim=embd_dim, input_token=input_token, unembd=unembd, weight_tied=weight_tied, seed=seed, init_scale=1).to(device)
     elif model_id == "H_transformer":
-        model = ToyTransformer(vocab_size=vocab_size, d_model=embd_dim, nhead=2, num_layers=2, n_dist=embd_dim,seq_len=input_token, seed=seed, use_dist_layer=True, init_scale=1).to(device)
+        model = ToyTransformer(vocab_size=vocab_size, d_model=embd_dim, nhead=2, num_layers=2, n_dist=np.sqrt(embd_dim),seq_len=input_token, seed=seed, use_dist_layer=True, init_scale=1).to(device)
     elif model_id == "standard_transformer":
         model = ToyTransformer(vocab_size=vocab_size, d_model=embd_dim, nhead=2, num_layers=2, seq_len=input_token, seed=seed, use_dist_layer=False, init_scale=1).to(device)
     else:
