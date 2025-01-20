@@ -63,19 +63,21 @@ def train_single_model(param_dict: dict):
     video = False if 'video' not in param_dict else param_dict['video']
     lr = 0.002 if 'lr' not in param_dict else param_dict['lr']
     weight_decay = 0.01 if 'weight_decay' not in param_dict else param_dict['weight_decay']
+    verbose = False if 'verbose' not in param_dict else param_dict['verbose']
+    lamb_reg = 0.01 if 'lamb_reg' not in param_dict else param_dict['lamb_reg']
 
     set_seed(seed)
 
     # define dataset
     input_token = 2
-    num_epochs = 7000
+    num_epochs = 7000 if 'num_epochs' not in param_dict else param_dict['num_epochs']
     if data_id == "lattice":
         dataset = parallelogram_dataset(p=5, dim=2, num=data_size, seed=seed, device=device)
         input_token = 3
     elif data_id == "greater":
         dataset = greater_than_dataset(p=30, num=data_size, seed=seed, device=device)
     elif data_id == "family_tree":
-        dataset = family_tree_dataset_2(p=255, num=data_size, seed=seed, device=device)
+        dataset = family_tree_dataset_2(p=127, num=data_size, seed=seed, device=device)
     elif data_id == "equivalence":
         input_token = 1
         dataset = mod_equiv_dataset(p=50, num=data_size, seed=seed, device=device)
@@ -118,7 +120,7 @@ def train_single_model(param_dict: dict):
     test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
     ret_dic = {}
-    ret_dic["results"] = model.train(param_dict={'num_epochs': num_epochs, 'learning_rate': lr, 'weight_decay':weight_decay, 'train_dataloader': train_dataloader, 'test_dataloader': test_dataloader, 'device': device, 'video': video})
+    ret_dic["results"] = model.train(param_dict={'num_epochs': num_epochs, 'learning_rate': lr, 'weight_decay':weight_decay, 'train_dataloader': train_dataloader, 'test_dataloader': test_dataloader, 'device': device, 'video': video, 'verbose': verbose, 'lambda': lamb_reg})
     ret_dic["model"] = model
     ret_dic["dataset"] = dataset
 
