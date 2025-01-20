@@ -40,7 +40,7 @@ embd_dim = 16
 lr = 0.002
 weight_decay = 0.01
 
-n_exp=embd_dim
+n_exp=1
 
 param_dict = {
     'seed': seed,
@@ -55,7 +55,7 @@ param_dict = {
     'weight_decay':weight_decay
 }
 
-results_root = "../results_test"
+results_root = "../results_1"
 
 current_datetime = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 results_root = f"{results_root}/{current_datetime}"
@@ -64,7 +64,7 @@ os.mkdir(results_root)
 param_dict_json = {k: v for k, v in param_dict.items() if k != 'device'} #  since torch.device is not JSON serializable
 
 
-with open(f"{results_root}/{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}_{n_exp}_config.json", "w") as f:
+with open(f"{results_root}/config.json", "w") as f:
     json.dump(param_dict_json, f, indent=4)
 
 aux_info = {}
@@ -99,43 +99,43 @@ else:
     visualize_embedding(model.embedding.data.cpu(), title=f"{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}_{n_exp}", save_path=f"{results_root}/emb_{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}_{n_exp}.png", dict_level = dataset['dict_level'] if 'dict_level' in dataset else None, color_dict = False if data_id == "permutation" else True, adjust_overlapping_text = False)
 
 
-# ## Exp2: Metric vs Overall Dataset Size (fixed train-test split)
-# print(f"Experiment 2: Metric vs Overall Dataset Size (fixed train-test split)")
-# data_size_list = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
-# for i in tqdm(range(len(data_size_list))):
-#     data_size = data_size_list[i]
-#     param_dict = {
-#         'seed': seed,
-#         'data_id': data_id,
-#         'data_size': data_size,
-#         'train_ratio': train_ratio,
-#         'model_id': model_id,
-#         'device': torch.device('cuda' if torch.cuda.is_available() else 'cpu'),
-#         'embd_dim': embd_dim,
-#         'n_exp': n_exp,
-#         'lr': lr,
-#         'weight_decay':weight_decay
-#     }
+## Exp2: Metric vs Overall Dataset Size (fixed train-test split)
+print(f"Experiment 2: Metric vs Overall Dataset Size (fixed train-test split)")
+data_size_list = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
+for i in tqdm(range(len(data_size_list))):
+    data_size = data_size_list[i]
+    param_dict = {
+        'seed': seed,
+        'data_id': data_id,
+        'data_size': data_size,
+        'train_ratio': train_ratio,
+        'model_id': model_id,
+        'device': torch.device('cuda' if torch.cuda.is_available() else 'cpu'),
+        'embd_dim': embd_dim,
+        'n_exp': n_exp,
+        'lr': lr,
+        'weight_decay':weight_decay
+    }
 
-#     print(f"Training model with seed {seed}, data_id {data_id}, model_id {model_id}, n_exp {n_exp}, embd_dim {embd_dim}")
-#     ret_dic = train_single_model(param_dict)
-#     model = ret_dic['model']
-#     dataset = ret_dic['dataset']
+    print(f"Training model with seed {seed}, data_id {data_id}, model_id {model_id}, n_exp {n_exp}, embd_dim {embd_dim}")
+    ret_dic = train_single_model(param_dict)
+    model = ret_dic['model']
+    dataset = ret_dic['dataset']
 
-#     torch.save(model.state_dict(), f"{results_root}/{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}_{n_exp}.pt")
-#     with open(f"{results_root}/{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}_{n_exp}_train_results.json", "w") as f:
-#         json.dump(ret_dic["results"], f, indent=4)
+    torch.save(model.state_dict(), f"{results_root}/{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}_{n_exp}.pt")
+    with open(f"{results_root}/{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}_{n_exp}_train_results.json", "w") as f:
+        json.dump(ret_dic["results"], f, indent=4)
     
-#     if data_id == "family_tree":
-#         aux_info["dict_level"] = dataset['dict_level']
+    if data_id == "family_tree":
+        aux_info["dict_level"] = dataset['dict_level']
     
-#     if hasattr(model.embedding, 'weight'):
-#         metric_dict = crystal_metric(model.embedding.weight.cpu().detach(), data_id, aux_info)
-#     else:
-#         metric_dict = crystal_metric(model.embedding.data.cpu(), data_id, aux_info)
+    if hasattr(model.embedding, 'weight'):
+        metric_dict = crystal_metric(model.embedding.weight.cpu().detach(), data_id, aux_info)
+    else:
+        metric_dict = crystal_metric(model.embedding.data.cpu(), data_id, aux_info)
 
-#     with open(f"{results_root}/{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}_{n_exp}.json", "w") as f:
-#         json.dump(metric_dict, f, indent=4)
+    with open(f"{results_root}/{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}_{n_exp}.json", "w") as f:
+        json.dump(metric_dict, f, indent=4)
 
 ## Exp3: Metric vs Train Fraction (fixed dataset size)
 print(f"Experiment 3: Metric vs Train Fraction (fixed dataset size)")
