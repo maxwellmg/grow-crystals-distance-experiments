@@ -67,10 +67,10 @@ def train_single_model(param_dict: dict):
     elif data_id == "greater":
         dataset = greater_than_dataset(p=30, num=data_size, seed=seed, device=device)
     elif data_id == "family_tree":
-        dataset = family_tree_dataset_2(p=127, num=data_size, seed=seed, device=device)
+        dataset = family_tree_dataset_2(p=255, num=data_size, seed=seed, device=device)
     elif data_id == "equivalence":
         input_token = 1
-        dataset = mod_classification_dataset(p=100, num=data_size, seed=seed, device=device)
+        dataset = mod_equiv_dataset(p=50, num=data_size, seed=seed, device=device)
     elif data_id == "circle":
         dataset = modular_addition_dataset(p=31, num=data_size, seed=seed, device=device)
     elif data_id=="permutation":
@@ -87,7 +87,7 @@ def train_single_model(param_dict: dict):
         weight_tied = True
         hidden_size = 100
         shp = [input_token * embd_dim, hidden_size, embd_dim, vocab_size]
-        model = MLP_HS(shp=shp, vocab_size=vocab_size, embd_dim=embd_dim, input_token=input_token, weight_tied=weight_tied, seed=seed, n=np.sqrt(embd_dim), init_scale=1).to(device)
+        model = MLP_HS(shp=shp, vocab_size=vocab_size, embd_dim=embd_dim, input_token=input_token, weight_tied=weight_tied, seed=seed, n=(embd_dim), init_scale=1).to(device)
     elif model_id == "standard_MLP":
         unembd = True
         weight_tied = True
@@ -95,7 +95,7 @@ def train_single_model(param_dict: dict):
         shp = [input_token * embd_dim, hidden_size, embd_dim, vocab_size]
         model = MLP(shp=shp, vocab_size=vocab_size, embd_dim=embd_dim, input_token=input_token, unembd=unembd, weight_tied=weight_tied, seed=seed, init_scale=1).to(device)
     elif model_id == "H_transformer":
-        model = ToyTransformer(vocab_size=vocab_size, d_model=embd_dim, nhead=2, num_layers=2, n_dist=np.sqrt(embd_dim),seq_len=input_token, seed=seed, use_dist_layer=True, init_scale=1).to(device)
+        model = ToyTransformer(vocab_size=vocab_size, d_model=embd_dim, nhead=2, num_layers=2, n_dist=embd_dim,seq_len=input_token, seed=seed, use_dist_layer=True, init_scale=1).to(device)
     elif model_id == "standard_transformer":
         model = ToyTransformer(vocab_size=vocab_size, d_model=embd_dim, nhead=2, num_layers=2, seq_len=input_token, seed=seed, use_dist_layer=False, init_scale=1).to(device)
     else:

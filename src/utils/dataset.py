@@ -328,6 +328,29 @@ def mod_classification_dataset(p, num, seed=0, device='cpu'):
     
     return dataset
 
+
+def mod_equiv_dataset(p, num, seed=0, device='cpu'):
+
+    torch.manual_seed(seed)
+    np.random.seed(seed)
+    
+    N_sample = num
+    x = np.random.choice(range(p), N_sample*2).reshape(N_sample, 2)
+
+    target = np.array([p if (x[i,0]-x[i,1])%5 == 0 else p+1 for i in range(N_sample)])
+    
+    data_id = torch.from_numpy(x).to(device)
+    labels = torch.from_numpy(target).to(device)
+    
+    vocab_size = p+2
+    
+    dataset = {}
+    dataset['data_id'] = data_id
+    dataset['label'] = labels
+    dataset['vocab_size'] = vocab_size
+    
+    return dataset
+
 def family_tree_dataset(p, num, seed=0, device='cpu'):
 
     torch.manual_seed(seed)
