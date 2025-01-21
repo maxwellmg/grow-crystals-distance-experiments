@@ -55,10 +55,10 @@ param_dict = {
     'weight_decay':weight_decay
 }
 
-results_root = "../results_1"
+results_root = "../results"
 
 current_datetime = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-results_root = f"{results_root}/{current_datetime}"
+results_root = f"{results_root}/{seed}-{data_id}-{model_id}"
 os.mkdir(results_root)
 
 param_dict_json = {k: v for k, v in param_dict.items() if k != 'device'} #  since torch.device is not JSON serializable
