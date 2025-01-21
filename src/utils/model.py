@@ -313,7 +313,7 @@ class ToyTransformer(customNNModule):
         return logits
     
 
-def load_model_from_file(model_id, data_id, results_root = "results",data_size = 1000, train_ratio=0.8,seed=66,n_exp=None, embd_dim=16, device='cpu', trained_on_gpu=False, n_in_filename=False,):
+def load_model_from_file(model_id, data_id, results_root = "results",data_size = 1000, train_ratio=0.8,seed=66,n_exp=None, embd_dim=16, device='cpu', trained_on_gpu=False, n_in_filename=False, embd_in_filename=False):
 
     input_token=2
 
@@ -359,7 +359,11 @@ def load_model_from_file(model_id, data_id, results_root = "results",data_size =
     if n_in_filename:
         load_path = f"../{results_root}/{seed}_permutation_{model_id}_{data_size}_{train_ratio}_{n_exp}.pt"
     else:
-        load_path = f"../{results_root}/{seed}_permutation_{model_id}_{data_size}_{train_ratio}.pt"
+        if embd_in_filename:
+            load_path = f"../{results_root}/{seed}_permutation_{model_id}_{data_size}_{train_ratio}_{embd_dim}.pt"
+        else:
+            load_path = f"../{results_root}/{seed}_permutation_{model_id}_{data_size}_{train_ratio}.pt"    
+    
     
     if trained_on_gpu:
         model.load_state_dict(torch.load(load_path), map_location=torch.device('cpu'))

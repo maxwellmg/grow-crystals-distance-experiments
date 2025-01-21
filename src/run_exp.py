@@ -35,7 +35,7 @@ model_id = args.model_id
 
 data_size = 1000
 train_ratio = 0.8
-embd_dim = 16
+embd_dim = 10
 
 lr = 0.002
 weight_decay = 0.01
