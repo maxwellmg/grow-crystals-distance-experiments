@@ -24,9 +24,6 @@ import csv
 import h5py
 import multiprocessing
 
-#from transformer_lens import *
-
-from transformers import pipeline
 
 from sklearn.decomposition import PCA
 from sklearn.utils import shuffle
