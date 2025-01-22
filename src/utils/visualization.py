@@ -222,8 +222,6 @@ def visualize_best_embedding(emb, right_coset_list, left_coset_list, title="", s
                 perm_index = perm_to_index[perm_tuple]
                 X_arr.append([emb_pca[perm_index, 0], emb_pca[perm_index, 1]])
                 label_arr.append(labels[pidx])
-        if idx == 0:
-            print(X_arr, label_arr)
         coset_scores.append(silhouette_score(X_arr, label_arr))
         
     coset_name = 'Right'
@@ -235,7 +233,7 @@ def visualize_best_embedding(emb, right_coset_list, left_coset_list, title="", s
     else: 
         coset=right_coset_list[best_coset]
     
-    print(f"Best coset found, {coset_scores[best_coset]}")
+    print(f"Best coset found, {coset_name} {best_coset}")
 
     plot_single_coset(coset, emb_pca, perm_to_index, title=title, save_path=save_path, dict_level=dict_level, adjust_overlapping_text=adjust_overlapping_text)
 
