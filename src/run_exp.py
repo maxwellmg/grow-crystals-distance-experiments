@@ -40,7 +40,7 @@ embd_dim = 16
 lr = 0.002
 weight_decay = 0.1
 
-n_exp=1
+n_exp=4
 
 param_dict = {
     'seed': seed,

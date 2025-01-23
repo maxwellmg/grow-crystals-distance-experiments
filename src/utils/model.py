@@ -25,6 +25,7 @@ class customNNModule(nn.Module):
         test_dataloader = param_dict['test_dataloader']
         device = param_dict['device']
         weight_decay = param_dict['weight_decay']
+        model_id = param_dict['model_id']
         video = False if 'video' not in param_dict else param_dict['video']
 
         verbose = True
@@ -61,14 +62,16 @@ class customNNModule(nn.Module):
                 batch_inputs = batch_inputs.to(device)
                 batch_targets = batch_targets.type(torch.LongTensor).to(device)
                 optimizer.zero_grad()
-                logits = self.forward(batch_inputs)
+                outputs = self.forward(batch_inputs)
 
 #               class_counts = torch.bincount(batch_targets.squeeze(), minlength=self.vocab_size).double() + 1e-8
 #               class_weights = 1 / class_counts.cuda()
 
                 criterion = nn.CrossEntropyLoss()#weight=class_weights)
-                
-                loss = criterion(logits, batch_targets.squeeze())
+                if 'H_' in model_id: # Harmonic Model
+                    loss = (-1)*(outputs[torch.arange(outputs.size(0)), batch_targets.squeeze()].mean())
+                else:
+                    loss = criterion(outputs, batch_targets.squeeze())
                 
                 if hasattr(self.embedding, 'weight'):
                     total_loss = loss + lamb_reg * torch.mean(torch.sqrt(torch.mean(self.embedding.weight**2, dim=0)))
@@ -80,7 +83,7 @@ class customNNModule(nn.Module):
                 train_loss += loss.item()
 
                 # Compute training accuracy
-                _, predicted = torch.max(logits, 1)
+                _, predicted = torch.max(outputs, 1)
                 train_correct += (predicted == batch_targets).sum().item()
                 train_total += batch_targets.size(0)
 
