@@ -45,7 +45,8 @@ def visualize_embedding(emb, title="", save_path=None, dict_level = None, color_
         print("Adjusting text")
         adjust_text(texts, x=x, y=y, autoalign='xy', force_points=0.5, only_move = {'text':'xy'})
     if save_path:
-        plt.savefig(save_path)
+        plt.tight_layout()
+        plt.savefig(save_path, bbox_inches='tight')
     #plt.show()
     #plt.close()
 
@@ -119,9 +120,8 @@ def visualize_embedding_permutations(emb, right_coset_list, left_coset_list, tit
         adjust_text(texts, autoalign='xy', force_points=0.5, only_move={'text': 'xy'})
 
     if save_path:
-        plt.savefig(save_path)
-    plt.show()
-    plt.close()
+        plt.tight_layout()
+        plt.savefig(save_path, bbox_inches='tight')
 
 def silhouette_score(points, labels, penalty_weight=0):
     points = np.array(points)
@@ -172,7 +172,7 @@ def plot_single_coset(array_list, emb_pca, perm_to_index, title=None, save_path=
         texts = []
 
     array_count = len(array_list)
-    colors = plt.cm.viridis(np.linspace(0, 1, array_count))
+    colors = plt.cm.viridis(np.linspace(0, 1, array_count)) # plt.cm.tab20(range(array_count%20)) 
 
     for array_idx, perm_array in enumerate(array_list):
         color = colors[array_idx]
@@ -198,10 +198,16 @@ def plot_single_coset(array_list, emb_pca, perm_to_index, title=None, save_path=
     plt.show()
     plt.close()
 
-def visualize_best_embedding(emb, right_coset_list, left_coset_list, title="", save_path=None, dict_level=None, adjust_overlapping_text=False):
+def visualize_best_embedding(emb, right_coset_list, left_coset_list, title="", save_name=None, dict_level=None, adjust_overlapping_text=False, penalty_weight=0, input_best=None):
     pca = PCA(n_components=2)
     emb_pca = pca.fit_transform(emb.detach().numpy())
     print("Explained Variance Ratio", pca.explained_variance_ratio_)
+
+    total_ev = np.sum(pca.explained_variance_ratio_)
+
+    save_path = None
+    if save_name:
+        save_path = f"{save_name}_ev_{total_ev:.4f}.png"
 
     # generate all permutations of [0, 1, 2, 3]
     all_permutations = list(itertools.permutations(range(4)))
@@ -222,10 +228,14 @@ def visualize_best_embedding(emb, right_coset_list, left_coset_list, title="", s
                 perm_index = perm_to_index[perm_tuple]
                 X_arr.append([emb_pca[perm_index, 0], emb_pca[perm_index, 1]])
                 label_arr.append(labels[pidx])
-        coset_scores.append(silhouette_score(X_arr, label_arr))
+        coset_scores.append(silhouette_score(X_arr, label_arr, penalty_weight))
         
     coset_name = 'Right'
     best_coset = np.argmax(coset_scores)
+
+    if input_best:
+        best_coset = input_best
+
     if best_coset > len(right_coset_list) - 1:
         best_coset = best_coset - len(right_coset_list)
         coset_name = 'Left'
