@@ -38,7 +38,7 @@ train_ratio = 0.8
 embd_dim = 16
 
 lr = 0.002
-weight_decay = 0.01
+weight_decay = 0.1
 
 n_exp=1
 
@@ -55,11 +55,12 @@ param_dict = {
     'weight_decay':weight_decay
 }
 
-results_root = "../results"
+results_root = "../results_n=1_embd=10"
 
 current_datetime = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 results_root = f"{results_root}/{current_datetime}-{seed}-{data_id}-{model_id}"
 os.mkdir(results_root)
+
 
 param_dict_json = {k: v for k, v in param_dict.items() if k != 'device'} #  since torch.device is not JSON serializable
 
@@ -84,7 +85,7 @@ else:
     raise ValueError(f"Unknown data_id: {data_id}")
 
 # Train the model
-print(f"Training model with seed {seed}, data_id {data_id}, model_id {model_id}, n_exp {n_exp}, embd_dim {embd_dim}")
+print(f"Training model with seed {seed}, data_id {data_id}, model_id {model_id}, n_exp {n_exp}, embd_dim {embd_dim}, weight decay {weight_decay}")
 ret_dic = train_single_model(param_dict)
 
 ## Exp1: Visualize Embeddings
@@ -163,7 +164,12 @@ for i in tqdm(range(len(train_ratio_list))):
     torch.save(model.state_dict(), f"{results_root}/{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}_{n_exp}.pt")
     with open(f"{results_root}/{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}_{n_exp}_train_results.json", "w") as f:
         json.dump(ret_dic["results"], f, indent=4)
+    torch.save(model.state_dict(), f"{results_root}/{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}_{n_exp}.pt")
+    with open(f"{results_root}/{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}_{n_exp}_train_results.json", "w") as f:
+        json.dump(ret_dic["results"], f, indent=4)
 
+    if data_id == "family_tree":
+        aux_info["dict_level"] = dataset['dict_level']
     if data_id == "family_tree":
         aux_info["dict_level"] = dataset['dict_level']
     
@@ -171,7 +177,13 @@ for i in tqdm(range(len(train_ratio_list))):
         metric_dict = crystal_metric(model.embedding.weight.cpu().detach(), data_id, aux_info)
     else:
         metric_dict = crystal_metric(model.embedding.data.cpu(), data_id, aux_info)
+    if hasattr(model.embedding, 'weight'):
+        metric_dict = crystal_metric(model.embedding.weight.cpu().detach(), data_id, aux_info)
+    else:
+        metric_dict = crystal_metric(model.embedding.data.cpu(), data_id, aux_info)
 
+    with open(f"{results_root}/{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}_{n_exp}_metric.json", "w") as f:
+        json.dump(metric_dict, f, indent=4)
     with open(f"{results_root}/{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}_{n_exp}_metric.json", "w") as f:
         json.dump(metric_dict, f, indent=4)
 

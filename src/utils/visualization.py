@@ -5,6 +5,9 @@ import random
 import itertools
 import numpy as np
 from collections import defaultdict
+import itertools
+import numpy as np
+from collections import defaultdict
 
 colors = [ "#{:06x}".format(random.randint(0, 0xFFFFFF)) for i in range(1000)]
 
@@ -311,6 +314,55 @@ def visualize_best_embedding(emb, right_coset_list, left_coset_list, title="", s
         coset=right_coset_list[best_coset]
     
 #    print(f"Best coset found, {coset_name} {best_coset}")
+
+    plot_single_coset(coset, emb_pca, perm_to_index, title=title, save_path=save_path, dict_level=dict_level, adjust_overlapping_text=adjust_overlapping_text)
+
+def visualize_best_embedding(emb, right_coset_list, left_coset_list, title="", save_name=None, dict_level=None, adjust_overlapping_text=False, penalty_weight=0, input_best=None):
+    pca = PCA(n_components=2)
+    emb_pca = pca.fit_transform(emb.detach().numpy())
+    print("Explained Variance Ratio", pca.explained_variance_ratio_)
+
+    total_ev = np.sum(pca.explained_variance_ratio_)
+
+    save_path = None
+    if save_name:
+        save_path = f"{save_name}_ev_{total_ev:.4f}.png"
+
+    # generate all permutations of [0, 1, 2, 3]
+    all_permutations = list(itertools.permutations(range(4)))
+    perm_to_index = {perm: idx for idx, perm in enumerate(all_permutations)}
+
+    full_coset_list = right_coset_list + left_coset_list
+
+    coset_scores = []
+    for idx, coset in enumerate(full_coset_list):
+        X_arr = []
+        label_arr = []
+        
+        labels=np.arange(len(coset))
+
+        for pidx, perm_array in enumerate(coset):
+            for perm in perm_array:
+                perm_tuple = tuple(perm)
+                perm_index = perm_to_index[perm_tuple]
+                X_arr.append([emb_pca[perm_index, 0], emb_pca[perm_index, 1]])
+                label_arr.append(labels[pidx])
+        coset_scores.append(silhouette_score(X_arr, label_arr, penalty_weight))
+        
+    coset_name = 'Right'
+    best_coset = np.argmax(coset_scores)
+
+    if input_best:
+        best_coset = input_best
+
+    if best_coset > len(right_coset_list) - 1:
+        best_coset = best_coset - len(right_coset_list)
+        coset_name = 'Left'
+        coset = left_coset_list[best_coset]
+    else: 
+        coset=right_coset_list[best_coset]
+    
+    print(f"Best coset found, {coset_name} {best_coset}")
 
     plot_single_coset(coset, emb_pca, perm_to_index, title=title, save_path=save_path, dict_level=dict_level, adjust_overlapping_text=adjust_overlapping_text)
 
