@@ -3,6 +3,8 @@ import torch.nn as nn
 import torch.optim as optim
 import numpy as np
 import random
+import optuna
+import joblib
 
 from tqdm import tqdm
 
@@ -20,8 +22,8 @@ from datetime import datetime
 
 data_id_choices = ["lattice", "greater", "family_tree", "equivalence", "circle", "permutation"]
 model_id_choices = ["H_MLP", "standard_MLP", "H_transformer", "standard_transformer"]
-split_choices = [1,2,3,4,5,6,7]
-wd_choices = [0.003, 0.005, 0.007, 0.01, 0.012, 0.015, 0.02, 0.03, 0.05, 0.07, 0.1]
+split_choices = [1,2,3,4,5,6,7, 8]
+wd_choices = [0.0005, 0.001, 0.003, 0.005, 0.007, 0.01, 0.012, 0.015, 0.02, 0.03, 0.05, 0.07, 0.1]
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Experiment')
     parser.add_argument('--seed', type=int, default=66, help='random seed')
@@ -43,7 +45,7 @@ train_ratio = 0.8
 embd_dim = 16
 
 lr = 0.002
-weight_decay = 0.005
+weight_decay = args.wd
 
 n_exp=1
 
@@ -88,6 +90,36 @@ elif data_id == "permutation":
     aux_info["p"] = 4
 else:
     raise ValueError(f"Unknown data_id: {data_id}")
+
+# # Optuna study for lr/wd
+# def loss_objective(trial):
+#     weight_decay = trial.suggest_float('wd', 0, 0.01)
+#     lr = trial.suggest_float('lr', 0.002, 0.005)
+
+#     param_dict = {
+#     'seed': seed,
+#     'data_id': data_id,
+#     'data_size': data_size,
+#     'train_ratio': train_ratio,
+#     'model_id': model_id,
+#     'device': torch.device('cuda:0' if torch.cuda.is_available() else 'cpu'),
+#     'embd_dim': embd_dim,
+#     'n_exp': n_exp,
+#     'lr': lr,
+#     'weight_decay':weight_decay
+#     }
+
+#     ret_dic = train_single_model(param_dict)
+
+#     test_loss = np.mean(ret_dic["results"]["test_losses"][-10:])
+
+#     return test_loss
+
+# study = optuna.create_study()
+# study.optimize(loss_objective, n_trials = 15)
+# joblib.dump(study, "wd_lr_study.pkl")
+
+# print(study.best_params)
 
 # # Train the model
 # print(f"Training model with seed {seed}, data_id {data_id}, model_id {model_id}, n_exp {n_exp}, embd_dim {embd_dim}, weight decay {weight_decay}")
@@ -209,9 +241,9 @@ if split == 5:
     seed_list = np.linspace(0, 1000, 20, dtype=int)[7:10]
 if split == 6:
     seed_list = np.linspace(0, 1000, 20, dtype=int)[10:13]
-if split == 5:
-    seed_list = np.linspace(0, 1000, 20, dtype=int)[13:17]
 if split == 7:
+    seed_list = np.linspace(0, 1000, 20, dtype=int)[13:17]
+if split == 8:
     seed_list = np.linspace(0, 1000, 20, dtype=int)[17:]
 
 
