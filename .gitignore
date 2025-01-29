@@ -7,3 +7,5 @@ scratch*.ipynb
 figures
 harmonic_archive.zip
 data
+dropbox*
+permutation_results

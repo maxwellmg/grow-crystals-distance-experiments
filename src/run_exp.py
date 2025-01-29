@@ -38,9 +38,9 @@ train_ratio = 0.8
 embd_dim = 16
 
 lr = 0.002
-weight_decay = 0.1
+weight_decay = 0.01 if "MLP" in model_id else 0.005
 
-n_exp=4
+n_exp=1
 
 param_dict = {
     'seed': seed,
@@ -55,7 +55,7 @@ param_dict = {
     'weight_decay':weight_decay
 }
 
-results_root = "../results_n=1_embd=10"
+results_root = "../results"
 
 current_datetime = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 results_root = f"{results_root}/{current_datetime}-{seed}-{data_id}-{model_id}"

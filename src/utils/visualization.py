@@ -255,7 +255,7 @@ def plot_single_coset(array_list, emb_pca, perm_to_index, title=None, save_path=
                 if dict_level and perm_index in dict_level:
                     label = str(dict_level[perm_index])
                     if adjust_overlapping_text:
-                        texts.append(plt.text(emb_pca[perm_index, 0], emb_pca[perm_index, 1], label, fontsize=12))
+                        texts.append(plt.text(emb_pca[perm_index, 0], emb_pca[perm_index, 1], label, fontsize=8))
                     else:
                         plt.text(emb_pca[perm_index, 0], emb_pca[perm_index, 1], label, fontsize=8)
     
