@@ -3,6 +3,8 @@ import torch.nn as nn
 import torch.optim as optim
 import numpy as np
 import random
+import optuna
+import joblib
 
 from tqdm import tqdm
 
@@ -20,16 +22,21 @@ from datetime import datetime
 
 data_id_choices = ["lattice", "greater", "family_tree", "equivalence", "circle", "permutation"]
 model_id_choices = ["H_MLP", "standard_MLP", "H_transformer", "standard_transformer"]
+split_choices = [1,2,3,4,5,6,7, 8]
+wd_choices = [0.0005, 0.001, 0.003, 0.005, 0.007, 0.01, 0.012, 0.015, 0.02, 0.03, 0.05, 0.07, 0.1]
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Experiment')
     parser.add_argument('--seed', type=int, default=66, help='random seed')
     parser.add_argument('--data_id', type=str, required=True, choices=data_id_choices, help='Data ID')
     parser.add_argument('--model_id', type=str, required=True, choices=model_id_choices, help='Model ID')
+    parser.add_argument('--split', type=int, required=False, choices=split_choices, help='To split running experiments')
+    parser.add_argument('--wd', type=float, required=False, choices=wd_choices, help='weight decay')
 
 args = parser.parse_args()
 seed = args.seed
 data_id = args.data_id
 model_id = args.model_id
+split=args.split
 
 ## ------------------------ CONFIG -------------------------- ##
 
@@ -41,6 +48,7 @@ lr = 0.002
 weight_decay = 0.01 if "MLP" in model_id else 0.005
 
 n_exp=1
+n_exp=1
 
 param_dict = {
     'seed': seed,
@@ -48,7 +56,7 @@ param_dict = {
     'data_size': data_size,
     'train_ratio': train_ratio,
     'model_id': model_id,
-    'device': torch.device('cuda' if torch.cuda.is_available() else 'cpu'),
+    'device': torch.device('cuda:0' if torch.cuda.is_available() else 'cpu'),
     'embd_dim': embd_dim,
     'n_exp': n_exp,
     'lr': lr,
@@ -84,20 +92,50 @@ elif data_id == "permutation":
 else:
     raise ValueError(f"Unknown data_id: {data_id}")
 
-# Train the model
-print(f"Training model with seed {seed}, data_id {data_id}, model_id {model_id}, n_exp {n_exp}, embd_dim {embd_dim}, weight decay {weight_decay}")
-ret_dic = train_single_model(param_dict)
+# # Optuna study for lr/wd
+# def loss_objective(trial):
+#     weight_decay = trial.suggest_float('wd', 0, 0.01)
+#     lr = trial.suggest_float('lr', 0.002, 0.005)
 
-## Exp1: Visualize Embeddings
-print(f"Experiment 1: Visualize Embeddings")
-model = ret_dic['model']
-dataset = ret_dic['dataset']
-torch.save(model.state_dict(), f"{results_root}/{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}_{n_exp}.pt")
+#     param_dict = {
+#     'seed': seed,
+#     'data_id': data_id,
+#     'data_size': data_size,
+#     'train_ratio': train_ratio,
+#     'model_id': model_id,
+#     'device': torch.device('cuda:0' if torch.cuda.is_available() else 'cpu'),
+#     'embd_dim': embd_dim,
+#     'n_exp': n_exp,
+#     'lr': lr,
+#     'weight_decay':weight_decay
+#     }
 
-if hasattr(model.embedding, 'weight'):
-    visualize_embedding(model.embedding.weight.cpu(), title=f"{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}_{n_exp}", save_path=f"{results_root}/emb_{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}_{n_exp}.png", dict_level = dataset['dict_level'] if 'dict_level' in dataset else None, color_dict = False if data_id == "permutation" else True, adjust_overlapping_text = False)
-else:
-    visualize_embedding(model.embedding.data.cpu(), title=f"{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}_{n_exp}", save_path=f"{results_root}/emb_{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}_{n_exp}.png", dict_level = dataset['dict_level'] if 'dict_level' in dataset else None, color_dict = False if data_id == "permutation" else True, adjust_overlapping_text = False)
+#     ret_dic = train_single_model(param_dict)
+
+#     test_loss = np.mean(ret_dic["results"]["test_losses"][-10:])
+
+#     return test_loss
+
+# study = optuna.create_study()
+# study.optimize(loss_objective, n_trials = 15)
+# joblib.dump(study, "wd_lr_study.pkl")
+
+# print(study.best_params)
+
+# # Train the model
+# print(f"Training model with seed {seed}, data_id {data_id}, model_id {model_id}, n_exp {n_exp}, embd_dim {embd_dim}, weight decay {weight_decay}")
+# ret_dic = train_single_model(param_dict)
+
+# ## Exp1: Visualize Embeddings
+# print(f"Experiment 1: Visualize Embeddings")
+# model = ret_dic['model']
+# dataset = ret_dic['dataset']
+# torch.save(model.state_dict(), f"{results_root}/{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}_{n_exp}.pt")
+
+# if hasattr(model.embedding, 'weight'):
+#     visualize_embedding(model.embedding.weight.cpu(), title=f"{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}_{n_exp}", save_path=f"{results_root}/emb_{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}_{n_exp}.png", dict_level = dataset['dict_level'] if 'dict_level' in dataset else None, color_dict = False if data_id == "permutation" else True, adjust_overlapping_text = False)
+# else:
+#     visualize_embedding(model.embedding.data.cpu(), title=f"{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}_{n_exp}", save_path=f"{results_root}/emb_{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}_{n_exp}.png", dict_level = dataset['dict_level'] if 'dict_level' in dataset else None, color_dict = False if data_id == "permutation" else True, adjust_overlapping_text = False)
 
 
 # ## Exp2: Metric vs Overall Dataset Size (fixed train-test split)
@@ -140,7 +178,12 @@ else:
 
 # ## Exp3: Metric vs Train Fraction (fixed dataset size)
 print(f"Experiment 3: Metric vs Train Fraction (fixed dataset size)")
-train_ratio_list = np.arange(1, 10) / 10
+train_ratio_list = []
+if split == 1:
+    train_ratio_list = np.arange(1, 5) / 10
+if split == 2:
+    train_ratio_list = np.arange(5,10) / 10
+
 data_size = 1000
 for i in tqdm(range(len(train_ratio_list))):
     train_ratio = train_ratio_list[i]
@@ -189,7 +232,22 @@ for i in tqdm(range(len(train_ratio_list))):
 
 ## Exp4: Grokking plot: Run with different seeds
 print(f"Experiment 4: Train with different seeds")
-seed_list = np.linspace(0, 1000, 20, dtype=int)
+
+seed_list = []
+if split == 3:
+    seed_list = np.linspace(0, 1000, 20, dtype=int)[:4]
+if split == 4:
+    seed_list = np.linspace(0, 1000, 20, dtype=int)[4:7]
+if split == 5:
+    seed_list = np.linspace(0, 1000, 20, dtype=int)[7:10]
+if split == 6:
+    seed_list = np.linspace(0, 1000, 20, dtype=int)[10:13]
+if split == 7:
+    seed_list = np.linspace(0, 1000, 20, dtype=int)[13:17]
+if split == 8:
+    seed_list = np.linspace(0, 1000, 20, dtype=int)[17:]
+
+
 
 for i in tqdm(range(len(seed_list))):
     seed = seed_list[i]
