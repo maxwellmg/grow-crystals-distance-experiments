@@ -2,6 +2,8 @@
 
 This is the GitHub repo for the paper "Harmonic Loss Trains Interpretable AI Models" (link TBD).
 
+(Add tweet here, catchy gif)
+
 Download the results from the following link: [Link](https://www.dropbox.com/scl/fi/9kj9aw1ymgsw0qya7sh8h/harmonic-data.zip?rlkey=6oc804x2r3ocmx3jidow4uqcp&st=e7i81esq&dl=0)
 
 Figure 1: ``toy_points.ipynb``
