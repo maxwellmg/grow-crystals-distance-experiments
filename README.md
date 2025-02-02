@@ -7,7 +7,12 @@ This is the GitHub repository for the paper "Harmonic Loss Trains Interpretable 
 ## What is Harmonic Loss?
 - Harmonic logit $d_i$ is defined as the $l_2$ distance between the weight vector $\mathbf{w}_i$ and the input (query) $\mathbf{x}$:&nbsp; $d_i = \|\mathbf{w}_i - \mathbf{x}\|_2$.
 
-- The probability $p_i$ is computed using the harmonic max function: $$p_i = \textrm{HarmonicMax}(\mathbf{d})_i \equiv \frac{1/d_i^n}{\sum_{j} 1/d_j^n},$$  where $n$ is the **harmonic exponent**—a hyperparameter that controls the heavy-tailedness of the probability distribution.
+- The probability $p_i$ is computed using the harmonic max function: 
+
+![Harmonic Max](./figures/eq_harmax.png)
+
+
+ where $n$ is the **harmonic exponent**—a hyperparameter that controls the heavy-tailedness of the probability distribution.
 
 - Harmonic Loss achieves (1) **nonlinear separability**, (2)  **fast convergence**, (3) **scale invariance**, (4) **interpretability by design**, properties that are not available in cross-entropy loss.
 
