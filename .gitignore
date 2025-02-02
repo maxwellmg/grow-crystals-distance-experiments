@@ -4,7 +4,6 @@ results
 scratch*.ipynb
 */slurm*.out
 
-figures
 harmonic_archive.zip
 data
 dropbox*
