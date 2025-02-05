@@ -1,6 +1,6 @@
 # Harmonic Loss Trains Interpretable AI Models
 
-This is the GitHub repository for the paper "Harmonic Loss Trains Interpretable AI Models" [[arXiv]]() [[Twitter]]() [[Github]](https://github.com/KindXiaoming/grow-crystals).
+This is the GitHub repository for the paper "Harmonic Loss Trains Interpretable AI Models" [[arXiv]](https://arxiv.org/abs/2502.01628) [[Twitter]](https://x.com/dbaek__/status/1886781418115862544) [[Github]](https://github.com/KindXiaoming/grow-crystals).
 
 ![Harmonic Demo](./figures/weights_evolution.gif)
 
