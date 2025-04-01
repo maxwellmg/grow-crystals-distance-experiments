@@ -12,7 +12,7 @@ from collections import defaultdict
 colors = [ "#{:06x}".format(random.randint(0, 0xFFFFFF)) for i in range(1000)]
 
 def visualize_embedding(emb, title="", save_path=None, dict_level = None, color_dict=True, adjust_overlapping_text=False):
-    # Riya: adjustText is a library that cleans up overlapping text in the figure, which is helpful for permutation. Feel free to comment it out.
+    # adjustText is a library that cleans up overlapping text in the figure, which is helpful for permutation. Feel free to comment it out.
 
     pca = PCA(n_components=2)
     emb_pca = pca.fit_transform(emb.detach().numpy())

@@ -60,15 +60,15 @@ param_dict = {
     'embd_dim': embd_dim,
     'n_exp': n_exp,
     'lr': lr,
-    'weight_decay':weight_decay
+    'weight_decay':weight_decay,
+    'custom_loss': "softnn"
 }
 
-results_root = f"results_n_exps/{n_exp}"
+results_root = f"results_loss_exps/softnn"
 
 current_datetime = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 results_root = f"{results_root}/{current_datetime}-{seed}-{data_id}-{model_id}"
 os.makedirs(results_root, exist_ok=True)
-
 
 param_dict_json = {k: v for k, v in param_dict.items() if k != 'device'} #  since torch.device is not JSON serializable
 
@@ -260,11 +260,12 @@ for i in tqdm(range(len(seed_list))):
         'data_size': data_size,
         'train_ratio': train_ratio,
         'model_id': model_id,
-        'device': torch.device('cuda:1' if torch.cuda.is_available() else 'cpu'),
+        'device': torch.device('cuda:0' if torch.cuda.is_available() else 'cpu'),
         'embd_dim': embd_dim,
         'n_exp': n_exp,
         'lr': lr,
-        'weight_decay':weight_decay
+        'weight_decay':weight_decay,
+        'custom_loss': "softnn"
     }
     print(f"Training model with seed {seed}, data_id {data_id}, model_id {model_id}, n_exp {n_exp}, embd_dim {embd_dim}")
     ret_dic = train_single_model(param_dict)
