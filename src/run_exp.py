@@ -2,9 +2,9 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import numpy as np
-import random
-import optuna
-import joblib
+# import random
+# import optuna
+# import joblib
 
 from tqdm import tqdm
 
@@ -63,7 +63,7 @@ param_dict = {
     'weight_decay':weight_decay
 }
 
-results_root = f"../results/n_experiments/{n_exp}"
+results_root = f"results_n_exps/{n_exp}"
 
 current_datetime = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 results_root = f"{results_root}/{current_datetime}-{seed}-{data_id}-{model_id}"
