@@ -12,10 +12,153 @@ import sys
 
 from tqdm import tqdm
 
+import torch.nn.functional as F
+
+use_custom_loss = False
+custom_loss = None
+
+class CustomLosses:
+    @staticmethod
+    def contrastive_loss(output, target, margin=1.0):
+        """
+        Computes contrastive loss with pairwise distance computation.
+
+        Args:
+            output (Tensor): Embeddings of shape (batch_size, embedding_dim).
+            target (Tensor): Labels of shape (batch_size,).
+            margin (float): Margin for contrastive loss.
+
+        Returns:
+            Tensor: Contrastive loss value.
+        """
+        batch_size = output.size(0)
+
+        # Compute pairwise squared Euclidean distances
+        distances = torch.cdist(output, output, p=2)  # Shape: (batch_size, batch_size)
+
+        # Mask to extract positive pairs (same class)
+        target_matrix = target.unsqueeze(1) == target.unsqueeze(0)  # Shape: (batch_size, batch_size)
+        pos_mask = target_matrix.fill_diagonal_(False)  # Exclude self-comparisons
+
+        # Mask to extract negative pairs (different class)
+        neg_mask = ~target_matrix
+
+        # Compute positive loss
+        pos_distances = distances * pos_mask  # Only keep positive pairs
+        pos_loss = torch.sum(pos_distances ** 2) / (pos_mask.sum() + 1e-8)  # Prevent division by zero
+
+        # Compute negative loss
+        neg_distances = distances * neg_mask  # Only keep negative pairs
+        neg_loss = torch.sum(F.relu(margin - neg_distances) ** 2) / (neg_mask.sum() + 1e-8)
+
+        # Total contrastive loss
+        loss = pos_loss + neg_loss
+        return loss
+
+    
+    @staticmethod
+    def constant_margin_loss(output, target, margin=1.0):
+        distances = torch.norm(output, dim=1)
+        loss = torch.mean(torch.clamp(margin - distances, min=0.0))
+        return loss
+    
+    @staticmethod
+    def spherical_loss(output, target, epsilon=1e-4):
+        """
+        Compute the spherical softmax loss as defined in the paper.
+        
+        Args:
+            output: Tensor of shape (batch_size, num_classes) - pre-activations (logits)
+            target: Tensor of shape (batch_size,) - target class indices
+            epsilon: float - small constant for numerical stability
+            
+        Returns:
+            The spherical softmax loss
+        """
+        # First L2 normalize the outputs along the class dimension (spherical projection)
+        normalized_output = F.normalize(output, p=2, dim=1)  # σ_i = o_i / ||o||
+        
+        # Compute squared normalized outputs plus epsilon
+        squared_normalized = normalized_output.pow(2) + epsilon  # σ_i² + ϵ
+        
+        # Compute spherical softmax probabilities
+        probabilities = squared_normalized / squared_normalized.sum(dim=1, keepdim=True)
+        
+        # Gather the probabilities of the target classes
+        target_probs = probabilities.gather(1, target.unsqueeze(1)).squeeze(1)
+        
+        # Compute negative log likelihood
+        loss = -torch.log(target_probs)
+        
+        return loss.mean()
+
+    
+    @staticmethod
+    def soft_nearest_neighbor_loss(output, target, temperature=0.1):
+        """
+        Robust implementation of soft nearest neighbor loss.
+        
+        Args:
+            output: Tensor of shape (batch_size, embedding_dim) - the embeddings
+            target: Tensor of shape (batch_size,) - the class labels
+            temperature: float - temperature parameter
+            
+        Returns:
+            The soft nearest neighbor loss as a scalar tensor
+        """
+        batch_size = output.size(0)
+        if batch_size == 0:
+            return torch.tensor(0.0, device=output.device)
+        
+        # Compute pairwise squared Euclidean distances in a numerically stable way
+        output_normalized = F.normalize(output, p=2, dim=1)
+        cos_similarity = torch.mm(output_normalized, output_normalized.t())
+        distances = 2 - 2 * cos_similarity  # converts cosine similarity to squared Euclidean
+        
+        # Compute exponential terms with temperature
+        exp_terms = torch.exp(-distances / temperature)
+        
+        # Create mask for same-class pairs (excluding self)
+        same_class = target.unsqueeze(1) == target.unsqueeze(0)
+        same_class.fill_diagonal_(False)  # exclude self-comparisons
+        
+        # Compute numerator and denominator
+        numerator = torch.sum(exp_terms * same_class, dim=1)
+        denominator = torch.sum(exp_terms, dim=1) - 1  # subtract 1 to exclude self
+        
+        # Handle cases where numerator might be zero (no same-class neighbors)
+        safe_ratio = torch.where(
+            numerator > 0,
+            numerator / denominator,
+            torch.ones_like(numerator) * 1e-8  # small value when no same-class neighbors
+        )
+        
+        # Compute loss and return mean
+        losses = -torch.log(safe_ratio)
+        return torch.mean(losses)
+
+
+
 
 class customNNModule(nn.Module):
-    def __init__(self):
+    def __init__(self, loss_type):
         super(customNNModule, self).__init__()
+        self.loss_type = loss_type
+    
+    def compute_loss(self, outputs, targets):
+        if self.loss_type == 'contrastive':
+            return CustomLosses.contrastive_loss(outputs, targets)
+        elif self.loss_type == 'constant_margin':
+            return CustomLosses.constant_margin_loss(outputs, targets)
+        elif self.loss_type == 'spherical':
+            return CustomLosses.spherical_loss(outputs, targets)
+        elif self.loss_type == 'soft_nn':
+            return CustomLosses.soft_nearest_neighbor_loss(outputs, targets)
+        elif self.loss_type == 'harmonic':
+            return (-1)*(outputs[torch.arange(outputs.size(0)), targets.squeeze()].mean())
+        elif self.loss_type == 'cross_entropy': # Cross-Entropy Loss
+            return nn.CrossEntropyLoss()(outputs, targets.squeeze())
+    
 
     def train(self, param_dict: dict):
 
@@ -67,11 +210,13 @@ class customNNModule(nn.Module):
 #               class_counts = torch.bincount(batch_targets.squeeze(), minlength=self.vocab_size).double() + 1e-8
 #               class_weights = 1 / class_counts.cuda()
 
-                criterion = nn.CrossEntropyLoss()#weight=class_weights)
-                if 'H_' in model_id: # Harmonic Model
-                    loss = (-1)*(outputs[torch.arange(outputs.size(0)), batch_targets.squeeze()].mean())
-                else:
-                    loss = criterion(outputs, batch_targets.squeeze())
+                # criterion = nn.CrossEntropyLoss()#weight=class_weights)
+                # if 'H_' in model_id: # Harmonic Model
+                #     loss = (-1)*(outputs[torch.arange(outputs.size(0)), batch_targets.squeeze()].mean())
+                # else:
+                # loss = criterion(outputs, batch_targets.squeeze())
+
+                loss = self.compute_loss(outputs, batch_targets)
                 
                 if hasattr(self.embedding, 'weight'):
                     total_loss = loss + lamb_reg * torch.mean(torch.sqrt(torch.mean(self.embedding.weight**2, dim=0)))
@@ -139,8 +284,8 @@ class customNNModule(nn.Module):
     
 
 class MLP(customNNModule):
-    def __init__(self, shp, vocab_size, embd_dim, input_token=2, init_scale=1., unembd=False, weight_tied=False, seed=0):
-        super(MLP, self).__init__()
+    def __init__(self, shp, vocab_size, embd_dim, input_token=2, init_scale=1., unembd=False, weight_tied=False, seed=0, loss_type='cross_entropy'):
+        super(MLP, self).__init__(loss_type)
         
         torch.manual_seed(seed)
         np.random.seed(seed)
@@ -214,8 +359,8 @@ class DistLayer(torch.nn.Linear):
         return (dist_sq)**(-self.n)
     
 class MLP_HS(customNNModule):
-    def __init__(self, shp, vocab_size, embd_dim, input_token=2, init_scale=1., weight_tied=True, n=1., seed=0):
-        super(MLP_HS, self).__init__()
+    def __init__(self, shp, vocab_size, embd_dim, input_token=2, init_scale=1., weight_tied=True, n=1., seed=0, loss_type="harmonic"):
+        super(MLP_HS, self).__init__(loss_type)
         
         torch.manual_seed(seed)
         np.random.seed(seed)
@@ -274,8 +419,8 @@ class MLP_HS(customNNModule):
 
 # 2-Layer Transformer Model with Explicit Residual Connections
 class ToyTransformer(customNNModule):
-    def __init__(self, vocab_size, d_model, nhead, num_layers, seq_len = 16, init_scale=1.,use_dist_layer = False, seed=0, n_dist=1.):
-        super(ToyTransformer, self).__init__()
+    def __init__(self, vocab_size, d_model, nhead, num_layers, seq_len = 16, init_scale=1.,use_dist_layer = False, seed=0, n_dist=1., loss_type='cross_entropy'):
+        super(ToyTransformer, self).__init__(loss_type)
 
         torch.manual_seed(seed)
         np.random.seed(seed)
@@ -345,27 +490,37 @@ def load_model_from_file(model_id, data_id, results_root = "results",data_size =
         weight_tied = True
         hidden_size = 100
         shp = [input_token * embd_dim, hidden_size, embd_dim, vocab_size]
-        model = MLP_HS(shp=shp, vocab_size=vocab_size, embd_dim=embd_dim, input_token=input_token, weight_tied=weight_tied, seed=seed, n=embd_dim, init_scale=1).to(device)
+        if use_custom_loss:
+            loss_type = custom_loss
+        else:
+            loss_type = 'harmonic'
+        print(loss_type)
+        model = MLP_HS(shp=shp, vocab_size=vocab_size, embd_dim=embd_dim, input_token=input_token, weight_tied=weight_tied, seed=seed, n=embd_dim, init_scale=1, loss_type=loss_type).to(device)
     elif model_id == "standard_MLP":
         unembd = True
         weight_tied = True
         hidden_size = 100
         shp = [input_token * embd_dim, hidden_size, embd_dim, vocab_size]
-        model = MLP(shp=shp, vocab_size=vocab_size, embd_dim=embd_dim, input_token=input_token, unembd=unembd, weight_tied=weight_tied, seed=seed, init_scale=1).to(device)
+        model = MLP(shp=shp, vocab_size=vocab_size, embd_dim=embd_dim, input_token=input_token, unembd=unembd, weight_tied=weight_tied, seed=seed, init_scale=1, loss_type='cross_entropy').to(device)
     elif model_id == "H_transformer":
-        model = ToyTransformer(vocab_size=vocab_size, d_model=embd_dim, nhead=2, num_layers=2, n_dist=embd_dim,seq_len=input_token, seed=seed, use_dist_layer=True, init_scale=1).to(device)
+        if use_custom_loss:
+            loss_type = custom_loss
+        else:
+            loss_type = 'harmonic'
+        print(loss_type)
+        model = ToyTransformer(vocab_size=vocab_size, d_model=embd_dim, nhead=2, num_layers=2, n_dist=embd_dim,seq_len=input_token, seed=seed, use_dist_layer=True, init_scale=1, loss_type='harmonic').to(device)
     elif model_id == "standard_transformer":
-        model = ToyTransformer(vocab_size=vocab_size, d_model=embd_dim, nhead=2, num_layers=2, seq_len=input_token, seed=seed, use_dist_layer=False, init_scale=1).to(device)
+        model = ToyTransformer(vocab_size=vocab_size, d_model=embd_dim, nhead=2, num_layers=2, seq_len=input_token, seed=seed, use_dist_layer=False, init_scale=1, loss_type='cross_entropy').to(device)
     else:
         raise ValueError(f"Unknown model_id: {model_id}")
     
     if n_in_filename:
-        load_path = f"../{results_root}/{seed}_permutation_{model_id}_{data_size}_{train_ratio}_{n_exp}.pt"
+        load_path = f"../{results_root}/{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}_{n_exp}.pt"
     else:
         if embd_in_filename:
-            load_path = f"../{results_root}/{seed}_permutation_{model_id}_{data_size}_{train_ratio}_{embd_dim}.pt"
+            load_path = f"../{results_root}/{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}_{embd_dim}.pt"
         else:
-            load_path = f"../{results_root}/{seed}_permutation_{model_id}_{data_size}_{train_ratio}.pt"    
+            load_path = f"../{results_root}/{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}.pt"    
     
     
     if trained_on_gpu:

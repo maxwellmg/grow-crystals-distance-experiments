@@ -65,6 +65,8 @@ def train_single_model(param_dict: dict):
     weight_decay = 0.01 if 'weight_decay' not in param_dict else param_dict['weight_decay']
     verbose = False if 'verbose' not in param_dict else param_dict['verbose']
     lamb_reg = 0.01 if 'lamb_reg' not in param_dict else param_dict['lamb_reg']
+    custom_loss = None if 'custom_loss' not in param_dict else param_dict['custom_loss']
+    use_custom_loss = False if custom_loss is None else True
 
     set_seed(seed)
 
@@ -98,17 +100,27 @@ def train_single_model(param_dict: dict):
         weight_tied = True
         hidden_size = 100
         shp = [input_token * embd_dim, hidden_size, embd_dim, vocab_size]
-        model = MLP_HS(shp=shp, vocab_size=vocab_size, embd_dim=embd_dim, input_token=input_token, weight_tied=weight_tied, seed=seed, n=n_exp, init_scale=1).to(device)
+        if use_custom_loss:
+            loss_type = custom_loss
+        else:
+            loss_type = 'harmonic'
+        print(loss_type)
+        model = MLP_HS(shp=shp, vocab_size=vocab_size, embd_dim=embd_dim, input_token=input_token, weight_tied=weight_tied, seed=seed, n=n_exp, init_scale=1, loss_type=loss_type).to(device)
     elif model_id == "standard_MLP":
         unembd = True
         weight_tied = True
         hidden_size = 100
         shp = [input_token * embd_dim, hidden_size, embd_dim, vocab_size]
-        model = MLP(shp=shp, vocab_size=vocab_size, embd_dim=embd_dim, input_token=input_token, unembd=unembd, weight_tied=weight_tied, seed=seed, init_scale=1).to(device)
+        model = MLP(shp=shp, vocab_size=vocab_size, embd_dim=embd_dim, input_token=input_token, unembd=unembd, weight_tied=weight_tied, seed=seed, init_scale=1, loss_type = "cross_entropy").to(device)
     elif model_id == "H_transformer":
-        model = ToyTransformer(vocab_size=vocab_size, d_model=embd_dim, nhead=2, num_layers=2, n_dist=n_exp,seq_len=input_token, seed=seed, use_dist_layer=True, init_scale=1).to(device)
+        if use_custom_loss:
+            loss_type = custom_loss
+        else:
+            loss_type = 'harmonic'
+        print(loss_type)
+        model = ToyTransformer(vocab_size=vocab_size, d_model=embd_dim, nhead=2, num_layers=2, n_dist=n_exp,seq_len=input_token, seed=seed, use_dist_layer=True, init_scale=1, loss_type=loss_type).to(device)
     elif model_id == "standard_transformer":
-        model = ToyTransformer(vocab_size=vocab_size, d_model=embd_dim, nhead=2, num_layers=2, seq_len=input_token, seed=seed, use_dist_layer=False, init_scale=1).to(device)
+        model = ToyTransformer(vocab_size=vocab_size, d_model=embd_dim, nhead=2, num_layers=2, seq_len=input_token, seed=seed, use_dist_layer=False, init_scale=1, loss_type = "cross_entropy").to(device)
     else:
         raise ValueError(f"Unknown model_id: {model_id}")
     

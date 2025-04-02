@@ -2,9 +2,9 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import numpy as np
-import random
-import optuna
-import joblib
+# import random
+# import optuna
+# import joblib
 
 from tqdm import tqdm
 
@@ -31,12 +31,15 @@ if __name__ == '__main__':
     parser.add_argument('--model_id', type=str, required=True, choices=model_id_choices, help='Model ID')
     parser.add_argument('--split', type=int, required=False, choices=split_choices, help='To split running experiments')
     parser.add_argument('--wd', type=float, required=False, choices=wd_choices, help='weight decay')
+    parser.add_argument('--n', type=int, required=False, default=1, help='n exponent value')
+
 
 args = parser.parse_args()
 seed = args.seed
 data_id = args.data_id
 model_id = args.model_id
 split=args.split
+n_exp = args.n
 
 ## ------------------------ CONFIG -------------------------- ##
 
@@ -47,28 +50,25 @@ embd_dim = 16
 lr = 0.002
 weight_decay = 0.01 if "MLP" in model_id else 0.005
 
-n_exp=1
-n_exp=1
-
 param_dict = {
     'seed': seed,
     'data_id': data_id,
     'data_size': data_size,
     'train_ratio': train_ratio,
     'model_id': model_id,
-    'device': torch.device('cuda:0' if torch.cuda.is_available() else 'cpu'),
+    'device': torch.device('cuda:1' if torch.cuda.is_available() else 'cpu'),
     'embd_dim': embd_dim,
     'n_exp': n_exp,
     'lr': lr,
-    'weight_decay':weight_decay
+    'weight_decay':weight_decay,
+    'custom_loss': "softnn"
 }
 
-results_root = "../results"
+results_root = f"results_loss_exps/softnn"
 
 current_datetime = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 results_root = f"{results_root}/{current_datetime}-{seed}-{data_id}-{model_id}"
-os.mkdir(results_root)
-
+os.makedirs(results_root, exist_ok=True)
 
 param_dict_json = {k: v for k, v in param_dict.items() if k != 'device'} #  since torch.device is not JSON serializable
 
@@ -176,59 +176,59 @@ else:
 #     with open(f"{results_root}/{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}_{n_exp}.json", "w") as f:
 #         json.dump(metric_dict, f, indent=4)
 
-# ## Exp3: Metric vs Train Fraction (fixed dataset size)
-print(f"Experiment 3: Metric vs Train Fraction (fixed dataset size)")
-train_ratio_list = []
-if split == 1:
-    train_ratio_list = np.arange(1, 5) / 10
-if split == 2:
-    train_ratio_list = np.arange(5,10) / 10
+# # ## Exp3: Metric vs Train Fraction (fixed dataset size)
+# print(f"Experiment 3: Metric vs Train Fraction (fixed dataset size)")
+# train_ratio_list = []
+# if split == 1:
+#     train_ratio_list = np.arange(1, 5) / 10
+# if split == 2:
+#     train_ratio_list = np.arange(5,10) / 10
 
-data_size = 1000
-for i in tqdm(range(len(train_ratio_list))):
-    train_ratio = train_ratio_list[i]
-    param_dict = {
-        'seed': seed,
-        'data_id': data_id,
-        'data_size': data_size,
-        'train_ratio': train_ratio,
-        'model_id': model_id,
-        'device': torch.device('cuda' if torch.cuda.is_available() else 'cpu'),
-        'embd_dim': embd_dim,
-        'n_exp': n_exp,
-        'lr': lr,
-        'weight_decay':weight_decay
-    }
-    print(f"Training model with seed {seed}, data_id {data_id}, model_id {model_id}, n_exp {n_exp}, embd_dim {embd_dim}")
-    ret_dic = train_single_model(param_dict)
-    model = ret_dic['model']
-    dataset = ret_dic['dataset']
+# data_size = 1000
+# for i in tqdm(range(len(train_ratio_list))):
+#     train_ratio = train_ratio_list[i]
+#     param_dict = {
+#         'seed': seed,
+#         'data_id': data_id,
+#         'data_size': data_size,
+#         'train_ratio': train_ratio,
+#         'model_id': model_id,
+#         'device': torch.device('cuda' if torch.cuda.is_available() else 'cpu'),
+#         'embd_dim': embd_dim,
+#         'n_exp': n_exp,
+#         'lr': lr,
+#         'weight_decay':weight_decay
+#     }
+#     print(f"Training model with seed {seed}, data_id {data_id}, model_id {model_id}, n_exp {n_exp}, embd_dim {embd_dim}")
+#     ret_dic = train_single_model(param_dict)
+#     model = ret_dic['model']
+#     dataset = ret_dic['dataset']
 
-    torch.save(model.state_dict(), f"{results_root}/{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}_{n_exp}.pt")
-    with open(f"{results_root}/{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}_{n_exp}_train_results.json", "w") as f:
-        json.dump(ret_dic["results"], f, indent=4)
-    torch.save(model.state_dict(), f"{results_root}/{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}_{n_exp}.pt")
-    with open(f"{results_root}/{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}_{n_exp}_train_results.json", "w") as f:
-        json.dump(ret_dic["results"], f, indent=4)
+#     torch.save(model.state_dict(), f"{results_root}/{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}_{n_exp}.pt")
+#     with open(f"{results_root}/{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}_{n_exp}_train_results.json", "w") as f:
+#         json.dump(ret_dic["results"], f, indent=4)
+#     torch.save(model.state_dict(), f"{results_root}/{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}_{n_exp}.pt")
+#     with open(f"{results_root}/{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}_{n_exp}_train_results.json", "w") as f:
+#         json.dump(ret_dic["results"], f, indent=4)
 
-    if data_id == "family_tree":
-        aux_info["dict_level"] = dataset['dict_level']
-    if data_id == "family_tree":
-        aux_info["dict_level"] = dataset['dict_level']
+#     if data_id == "family_tree":
+#         aux_info["dict_level"] = dataset['dict_level']
+#     if data_id == "family_tree":
+#         aux_info["dict_level"] = dataset['dict_level']
     
-    if hasattr(model.embedding, 'weight'):
-        metric_dict = crystal_metric(model.embedding.weight.cpu().detach(), data_id, aux_info)
-    else:
-        metric_dict = crystal_metric(model.embedding.data.cpu(), data_id, aux_info)
-    if hasattr(model.embedding, 'weight'):
-        metric_dict = crystal_metric(model.embedding.weight.cpu().detach(), data_id, aux_info)
-    else:
-        metric_dict = crystal_metric(model.embedding.data.cpu(), data_id, aux_info)
+#     if hasattr(model.embedding, 'weight'):
+#         metric_dict = crystal_metric(model.embedding.weight.cpu().detach(), data_id, aux_info)
+#     else:
+#         metric_dict = crystal_metric(model.embedding.data.cpu(), data_id, aux_info)
+#     if hasattr(model.embedding, 'weight'):
+#         metric_dict = crystal_metric(model.embedding.weight.cpu().detach(), data_id, aux_info)
+#     else:
+#         metric_dict = crystal_metric(model.embedding.data.cpu(), data_id, aux_info)
 
-    with open(f"{results_root}/{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}_{n_exp}_metric.json", "w") as f:
-        json.dump(metric_dict, f, indent=4)
-    with open(f"{results_root}/{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}_{n_exp}_metric.json", "w") as f:
-        json.dump(metric_dict, f, indent=4)
+#     with open(f"{results_root}/{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}_{n_exp}_metric.json", "w") as f:
+#         json.dump(metric_dict, f, indent=4)
+#     with open(f"{results_root}/{seed}_{data_id}_{model_id}_{data_size}_{train_ratio}_{n_exp}_metric.json", "w") as f:
+#         json.dump(metric_dict, f, indent=4)
 
 ## Exp4: Grokking plot: Run with different seeds
 print(f"Experiment 4: Train with different seeds")
@@ -260,11 +260,12 @@ for i in tqdm(range(len(seed_list))):
         'data_size': data_size,
         'train_ratio': train_ratio,
         'model_id': model_id,
-        'device': torch.device('cuda' if torch.cuda.is_available() else 'cpu'),
+        'device': torch.device('cuda:0' if torch.cuda.is_available() else 'cpu'),
         'embd_dim': embd_dim,
         'n_exp': n_exp,
         'lr': lr,
-        'weight_decay':weight_decay
+        'weight_decay':weight_decay,
+        'custom_loss': "softnn"
     }
     print(f"Training model with seed {seed}, data_id {data_id}, model_id {model_id}, n_exp {n_exp}, embd_dim {embd_dim}")
     ret_dic = train_single_model(param_dict)
